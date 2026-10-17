@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Lexico.App/Lexico.App.csproj" />
+    <Project Path="src/Lexico.Core/Lexico.Core.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Lexico.Core.Tests/Lexico.Core.Tests.csproj" />
+  </Folder>
+</Solution>

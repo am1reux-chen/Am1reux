@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="Lexio.App.Pages.LibraryPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:models="using:Lexico.Core.Domain"
+    xmlns:vm="using:Lexio.ViewModels"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls">
+
+    <Grid Padding="36,28,36,24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+
+        <StackPanel Grid.Row="0" Grid.Column="0" Spacing="2">
+            <TextBlock Text="Library" Style="{StaticResource PageTitle}"/>
+            <TextBlock Text="搜索词库 · 管理词书 · 导入自定义内容" Style="{StaticResource PageSubtitle}"/>
+        </StackPanel>
+        <Button Grid.Row="0" Grid.Column="1" Content="导入 CSV / TXT" Click="OnImportClick" VerticalAlignment="Bottom"/>
+
+        <TextBox x:Name="SearchBox" Grid.Row="1" Grid.ColumnSpan="2"
+                 PlaceholderText="搜索单词（输入即搜）" TextChanged="OnSearchTextChanged"
+                 Margin="0,0,0,12" FontSize="15"/>
+
+        <Grid Grid.Row="2" Grid.ColumnSpan="2" ColumnSpacing="24">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Grid Grid.Column="0">
+                <muxc:ProgressRing IsActive="{x:Bind Vm.Searching, Mode=OneWay}" Width="28" Height="28"/>
+                <TextBlock Text="没有找到匹配的单词"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                           HorizontalAlignment="Center" VerticalAlignment="Center"
+                           Visibility="{x:Bind Vm.NoResults, Mode=OneWay}"/>
+                <ListView ItemsSource="{x:Bind Vm.Results, Mode=OneWay}" SelectionMode="None" IsItemClickEnabled="True" ItemClick="OnWordClick">
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="vm:SearchResultItem">
+                            <StackPanel Spacing="2" Padding="0,6">
+                                <StackPanel Orientation="Horizontal" Spacing="10">
+                                    <TextBlock Text="{x:Bind Word.Lemma}" FontSize="18" FontWeight="SemiBold"/>
+                                    <TextBlock Text="{x:Bind Word.IpaUs}" Foreground="{ThemeResource TextFillColorTertiaryBrush}" FontSize="13" VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <TextBlock FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"
+                                           Text="{x:Bind FirstLine}"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </Grid>
+
+            <StackPanel Grid.Column="1" Spacing="8" Orientation="Vertical">
+                <TextBlock Text="词书" FontSize="16" FontWeight="SemiBold"/>
+                <TextBlock Text="{x:Bind Vm.ResultCountText, Mode=OneWay}" Foreground="{ThemeResource TextFillColorTertiaryBrush}" FontSize="12"/>
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <ItemsControl ItemsSource="{x:Bind Vm.Decks, Mode=OneWay}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="models:DeckInfo">
+                                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                        BorderThickness="1" CornerRadius="12"
+                                        Padding="14,10" Margin="0,0,0,8">
+                                    <Grid ColumnSpacing="8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Spacing="2">
+                                            <TextBlock Text="{x:Bind Name}" FontSize="14" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                                            <TextBlock Text="{x:Bind Description}" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                        <TextBlock Grid.Column="1" Text="{x:Bind WordCount}" Style="{StaticResource MetricValue}" FontSize="18"/>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+                <TextBlock Text="{x:Bind Vm.StatusText, Mode=OneWay}" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Page>

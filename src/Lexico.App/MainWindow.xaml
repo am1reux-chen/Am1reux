@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Window
+    x:Class="Lexio.App.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls">
+
+    <Grid>
+        <muxc:NavigationView
+            x:Name="Nav"
+            IsBackButtonVisible="Collapsed"
+            IsSettingsVisible="False"
+            PaneDisplayMode="Left"
+            OpenPaneLength="200">
+            <muxc:NavigationView.MenuItems>
+                <muxc:NavigationViewItem Content="Today" Tag="today">
+                    <muxc:NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE787;"/>
+                    </muxc:NavigationViewItem.Icon>
+                </muxc:NavigationViewItem>
+                <muxc:NavigationViewItem Content="Learn" Tag="learn">
+                    <muxc:NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE7B8;"/>
+                    </muxc:NavigationViewItem.Icon>
+                </muxc:NavigationViewItem>
+                <muxc:NavigationViewItem Content="Library" Tag="library">
+                    <muxc:NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE8F1;"/>
+                    </muxc:NavigationViewItem.Icon>
+                </muxc:NavigationViewItem>
+                <muxc:NavigationViewItem Content="Insights" Tag="insights">
+                    <muxc:NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE9D2;"/>
+                    </muxc:NavigationViewItem.Icon>
+                </muxc:NavigationViewItem>
+            </muxc:NavigationView.MenuItems>
+
+            <Grid>
+                <Frame x:Name="ContentFrame"/>
+            </Grid>
+        </muxc:NavigationView>
+    </Grid>
+</Window>

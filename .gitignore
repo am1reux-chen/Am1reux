@@ -1,0 +1,29 @@
+# Build artifacts
+bin/
+obj/
+artifacts/
+publish/
+
+# IDE
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+
+# Rider / VS
+*.DotSettings.user
+
+# Local runtime data (never commit databases)
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+
+# NuGet
+*.nupkg
+packages/
+
+# OS
+Thumbs.db
+.DS_Store
