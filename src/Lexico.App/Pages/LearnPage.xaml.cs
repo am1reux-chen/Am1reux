@@ -15,6 +15,15 @@ public sealed partial class LearnPage : Page
 
     public LearnViewModel Vm { get; }
 
+    /// <summary>x:Bind functions. Work around derived VM properties that do not
+    /// forward change notifications; x:Bind re-evaluates these whenever the
+    /// referenced VM property (INPC) changes. They must be instance methods and
+    /// must return Visibility directly — the compiler's implicit bool→Visibility
+    /// cast on function results generates broken code in this WinUI version.</summary>
+    public Visibility HiddenWhen(bool value) => value ? Visibility.Collapsed : Visibility.Visible;
+
+    public Visibility VisibleWhenText(string? value) => string.IsNullOrWhiteSpace(value) ? Visibility.Collapsed : Visibility.Visible;
+
     public LearnPage()
     {
         InitializeComponent();
