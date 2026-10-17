@@ -6,69 +6,128 @@
     xmlns:vm="using:Lexio.ViewModels"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls">
 
-    <Grid Padding="36,28,36,24">
+    <Grid Padding="40,32,40,28">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <StackPanel Grid.Row="0" Spacing="2">
+        <StackPanel Grid.Row="0" Spacing="3">
             <TextBlock Text="Insights" Style="{StaticResource PageTitle}"/>
-            <TextBlock Text="记忆状态 · 当日统计 · 未来负载" Style="{StaticResource PageSubtitle}"/>
+            <TextBlock Text="记忆状态 · 近期表现 · 未来负载" Style="{StaticResource PageSubtitle}"/>
         </StackPanel>
 
-        <Grid Grid.Row="1" ColumnSpacing="14" Margin="0,0,0,20">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-
-            <Border Grid.Column="0" Style="{StaticResource MetricCardStyle}">
-                <StackPanel><TextBlock Text="{x:Bind Vm.NewCount, Mode=OneWay}" Style="{StaticResource MetricValue}"/><TextBlock Text="新词" Style="{StaticResource MetricLabel}"/></StackPanel>
-            </Border>
-            <Border Grid.Column="1" Style="{StaticResource MetricCardStyle}">
-                <StackPanel><TextBlock Text="{x:Bind Vm.LearningCount, Mode=OneWay}" Style="{StaticResource MetricValue}"/><TextBlock Text="学习中" Style="{StaticResource MetricLabel}"/></StackPanel>
-            </Border>
-            <Border Grid.Column="2" Style="{StaticResource MetricCardStyle}">
-                <StackPanel><TextBlock Text="{x:Bind Vm.ReviewCount, Mode=OneWay}" Style="{StaticResource MetricValue}"/><TextBlock Text="复习中" Style="{StaticResource MetricLabel}"/></StackPanel>
-            </Border>
-            <Border Grid.Column="3" Style="{StaticResource MetricCardStyle}">
-                <StackPanel><TextBlock Text="{x:Bind Vm.ReviewsToday, Mode=OneWay}" Style="{StaticResource MetricValue}"/><TextBlock Text="今日复习" Style="{StaticResource MetricLabel}"/></StackPanel>
-            </Border>
-            <Border Grid.Column="4" Style="{StaticResource MetricCardStyle}">
-                <StackPanel><TextBlock Text="{x:Bind Vm.RetentionText, Mode=OneWay}" Style="{StaticResource MetricValue}"/><TextBlock Text="30 天记住率" Style="{StaticResource MetricLabel}"/></StackPanel>
-            </Border>
-            <Border Grid.Column="5" Style="{StaticResource MetricCardStyle}">
-                <StackPanel><TextBlock Text="{x:Bind Vm.TotalReviewsText, Mode=OneWay}" Style="{StaticResource MetricValue}"/><TextBlock Text="累计复习" Style="{StaticResource MetricLabel}"/></StackPanel>
-            </Border>
-        </Grid>
-
-        <Grid Grid.Row="2">
+        <Grid Grid.Row="1">
             <muxc:ProgressRing IsActive="{x:Bind Vm.Loading, Mode=OneWay}" Width="32" Height="32"/>
-            <StackPanel Spacing="10" VerticalAlignment="Top">
-                <TextBlock Text="未来 7 天复习负载" FontSize="16" FontWeight="SemiBold"/>
-                <TextBlock Text="{x:Bind Vm.UpcomingText, Mode=OneWay}" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                <ItemsControl ItemsSource="{x:Bind Vm.Bars, Mode=OneWay}" Margin="0,8,0,0">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <StackPanel Orientation="Horizontal" Spacing="18"/>
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate x:DataType="vm:BarItem">
-                            <StackPanel Spacing="4" Width="52" VerticalAlignment="Bottom">
-                                <TextBlock Text="{x:Bind Count}" HorizontalAlignment="Center" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                                <Border Height="{x:Bind Height, Mode=OneWay}"
-                                        Width="26" HorizontalAlignment="Center"
-                                        Background="{ThemeResource AccentFillColorDefaultBrush}"
-                                        CornerRadius="4,4,2,2}" VerticalAlignment="Bottom"/>
-                                <TextBlock Text="{x:Bind Label}" HorizontalAlignment="Center" FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" TextAlignment="Center" TextWrapping="Wrap"/>
+            <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                <StackPanel Spacing="22" MaxWidth="860" HorizontalAlignment="Left">
+
+                    <!-- memory state -->
+                    <StackPanel Spacing="10">
+                        <TextBlock Text="记忆状态" Style="{StaticResource SectionHeader}"/>
+                        <Grid ColumnSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Border Grid.Column="0" Style="{StaticResource MetricCardStyle}">
+                                <StackPanel>
+                                    <TextBlock Text="{x:Bind Vm.ReviewCount, Mode=OneWay}" Style="{StaticResource MetricValue}"/>
+                                    <TextBlock Text="复习中" Style="{StaticResource MetricLabel}"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Grid.Column="1" Style="{StaticResource MetricCardStyle}">
+                                <StackPanel>
+                                    <TextBlock Text="{x:Bind Vm.LearningCount, Mode=OneWay}" Style="{StaticResource MetricValue}"/>
+                                    <TextBlock Text="学习中" Style="{StaticResource MetricLabel}"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Grid.Column="2" Style="{StaticResource MetricCardStyle}">
+                                <StackPanel>
+                                    <TextBlock Text="{x:Bind Vm.NewCount, Mode=OneWay}" Style="{StaticResource MetricValue}"/>
+                                    <TextBlock Text="待学新词" Style="{StaticResource MetricLabel}"/>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </StackPanel>
+
+                    <!-- recent activity: one card, three columns -->
+                    <StackPanel Spacing="10">
+                        <TextBlock Text="近期表现" Style="{StaticResource SectionHeader}"/>
+                        <Border Style="{StaticResource MetricCardStyle}">
+                            <Grid ColumnSpacing="0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="{x:Bind Vm.ReviewsToday, Mode=OneWay}" Style="{StaticResource MetricValue}" FontSize="22"/>
+                                    <TextBlock Text="今日复习" Style="{StaticResource MetricLabel}"/>
+                                </StackPanel>
+                                <Rectangle Grid.Column="1" Width="1" Fill="{ThemeResource DividerStrokeColorDefaultBrush}" Margin="18,2"/>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="{x:Bind Vm.RetentionText, Mode=OneWay}" Style="{StaticResource MetricValue}" FontSize="22"/>
+                                    <TextBlock Text="30 天记住率" Style="{StaticResource MetricLabel}"/>
+                                </StackPanel>
+                                <Rectangle Grid.Column="3" Width="1" Fill="{ThemeResource DividerStrokeColorDefaultBrush}" Margin="18,2"/>
+                                <StackPanel Grid.Column="4">
+                                    <TextBlock Text="{x:Bind Vm.TotalReviewsText, Mode=OneWay}" Style="{StaticResource MetricValue}" FontSize="22"/>
+                                    <TextBlock Text="累计复习" Style="{StaticResource MetricLabel}"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- upcoming load -->
+                    <StackPanel Spacing="10">
+                        <TextBlock Text="未来 7 天负载" Style="{StaticResource SectionHeader}"/>
+                        <Border Style="{StaticResource MetricCardStyle}" Padding="24,20">
+                            <StackPanel Spacing="14">
+                                <TextBlock Text="{x:Bind Vm.UpcomingText, Mode=OneWay}" Style="{StaticResource HintTextStyle}"/>
+                                <ItemsControl ItemsSource="{x:Bind Vm.Bars, Mode=OneWay}" HorizontalAlignment="Center">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel Orientation="Horizontal" Spacing="20"/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:BarItem">
+                                            <StackPanel Width="46" VerticalAlignment="Bottom" Spacing="6">
+                                                <TextBlock Text="{x:Bind Count}" HorizontalAlignment="Center" FontSize="12"
+                                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                                <Border Height="{x:Bind Height, Mode=OneWay}" Width="22"
+                                                        HorizontalAlignment="Center" VerticalAlignment="Bottom"
+                                                        Background="{ThemeResource AccentFillColorSecondaryBrush}"
+                                                        CornerRadius="4,4,2,2}"/>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <Rectangle Height="1" Fill="{ThemeResource DividerStrokeColorDefaultBrush}" Margin="-24,0"/>
+                                <ItemsControl ItemsSource="{x:Bind Vm.Bars, Mode=OneWay}" HorizontalAlignment="Center">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel Orientation="Horizontal" Spacing="20"/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:BarItem">
+                                            <TextBlock Text="{x:Bind Label}" Width="46" HorizontalAlignment="Center"
+                                                       FontSize="10.5" Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                                                       TextAlignment="Center"/>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
                             </StackPanel>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </StackPanel>
+                        </Border>
+                    </StackPanel>
+
+                </StackPanel>
+            </ScrollViewer>
         </Grid>
     </Grid>
 </Page>

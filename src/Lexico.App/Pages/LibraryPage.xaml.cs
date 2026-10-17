@@ -1,3 +1,4 @@
+using System.Collections.Specialized;
 using Lexio.Services;
 using Lexio.ViewModels;
 using Lexico.Core.Domain;
@@ -23,6 +24,15 @@ public sealed partial class LibraryPage : Page
             _debounce.Stop();
             _ = Vm.SearchAsync(SearchBox.Text);
         };
+        Vm.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName is nameof(Vm.NoResults) or nameof(Vm.Searching))
+                UpdateListStates();
+        };
+        Vm.Results.CollectionChanged += (_, _) => UpdateListStates();
+        Vm.Decks.CollectionChanged += OnDecksChanged;
+        UpdateListStates();
+        OnDecksChanged(null, null!);
     }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -51,6 +61,24 @@ public sealed partial class LibraryPage : Page
     {
         _debounce.Stop();
         _debounce.Start();
+        UpdateListStates();
+    }
+
+    /// <summary>Pure visual state: initial hint vs empty-result panel vs result list.</summary>
+    private void UpdateListStates()
+    {
+        bool hasResults = Vm.Results.Count > 0;
+        bool hasQuery = !string.IsNullOrWhiteSpace(SearchBox.Text);
+        InitialHintPanel.Visibility = !hasResults && !Vm.NoResults && !hasQuery && !Vm.Searching
+            ? Visibility.Visible : Visibility.Collapsed;
+        EmptyResultsPanel.Visibility = Vm.NoResults && !hasResults
+            ? Visibility.Visible : Visibility.Collapsed;
+        ResultsList.Visibility = hasResults ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    private void OnDecksChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        DecksEmptyHint.Visibility = Vm.Decks.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
     }
 
     private async void OnImportClick(object sender, RoutedEventArgs e)

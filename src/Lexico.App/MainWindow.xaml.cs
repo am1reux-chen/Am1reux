@@ -2,6 +2,7 @@ using Lexio.Services;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Media.Animation;
 
 namespace Lexio.App;
 
@@ -30,10 +31,10 @@ public sealed partial class MainWindow : Window
         {
             if (e.SelectedItemContainer?.Tag is string tag && _pages.TryGetValue(tag, out var page))
             {
-                ContentFrame.Navigate(page, null, new Microsoft.UI.Xaml.Media.Animation.SuppressNavigationTransitionInfo());
+                ContentFrame.Navigate(page, null, Transition());
             }
         };
-        ContentFrame.Navigate(_pages["today"], null, new Microsoft.UI.Xaml.Media.Animation.SuppressNavigationTransitionInfo());
+        ContentFrame.Navigate(_pages["today"], null, new SuppressNavigationTransitionInfo());
     }
 
     public void NavigateTo(Type pageType)
@@ -48,6 +49,14 @@ public sealed partial class MainWindow : Window
                 return; // SelectionChanged performs the navigation
             }
         }
-        ContentFrame.Navigate(pageType, null, new Microsoft.UI.Xaml.Media.Animation.SuppressNavigationTransitionInfo());
+        ContentFrame.Navigate(pageType, null, Transition());
+    }
+
+    /// <summary>Page transitions: ~240ms slide; suppressed when the user prefers reduced motion.</summary>
+    private static NavigationTransitionInfo Transition()
+    {
+        return AppServices.Instance.ReduceMotion
+            ? new SuppressNavigationTransitionInfo()
+            : new SlideNavigationTransitionInfo { Effect = SlideNavigationTransitionEffect.FromRight };
     }
 }

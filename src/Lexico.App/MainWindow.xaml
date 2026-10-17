@@ -11,7 +11,7 @@
             IsBackButtonVisible="Collapsed"
             IsSettingsVisible="False"
             PaneDisplayMode="Left"
-            OpenPaneLength="200">
+            OpenPaneLength="216">
             <muxc:NavigationView.MenuItems>
                 <muxc:NavigationViewItem Content="Today" Tag="today">
                     <muxc:NavigationViewItem.Icon>

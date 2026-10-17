@@ -7,8 +7,9 @@
     xmlns:vm="using:Lexio.ViewModels"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls">
 
-    <Grid Padding="36,28,36,24">
+    <Grid Padding="40,32,40,28">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -18,72 +19,128 @@
             <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
 
-        <StackPanel Grid.Row="0" Grid.Column="0" Spacing="2">
+        <StackPanel Grid.Row="0" Grid.Column="0" Spacing="3">
             <TextBlock Text="Library" Style="{StaticResource PageTitle}"/>
             <TextBlock Text="搜索词库 · 管理词书 · 导入自定义内容" Style="{StaticResource PageSubtitle}"/>
         </StackPanel>
-        <Button Grid.Row="0" Grid.Column="1" Content="导入 CSV / TXT" Click="OnImportClick" VerticalAlignment="Bottom"/>
+        <Button Grid.Row="0" Grid.Column="1" Click="OnImportClick" VerticalAlignment="Bottom"
+                Style="{StaticResource GhostButtonStyle}" Padding="14,8">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <FontIcon Glyph="&#xE8E5;" FontSize="14"/>
+                <TextBlock Text="导入 CSV / TXT" FontSize="13"/>
+            </StackPanel>
+        </Button>
 
-        <TextBox x:Name="SearchBox" Grid.Row="1" Grid.ColumnSpan="2"
-                 PlaceholderText="搜索单词（输入即搜）" TextChanged="OnSearchTextChanged"
-                 Margin="0,0,0,12" FontSize="15"/>
+        <!-- search -->
+        <Grid x:Name="SearchRoot" Grid.Row="1" Grid.ColumnSpan="2" Margin="0,2,0,4">
+            <TextBox x:Name="SearchBox"
+                     PlaceholderText="搜索单词，输入即出结果"
+                     TextChanged="OnSearchTextChanged"
+                     Height="42" FontSize="15" CornerRadius="10"
+                     Padding="44,0,14,0" VerticalContentAlignment="Center"/>
+            <FontIcon Glyph="&#xE721;" FontSize="15" Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                      Margin="16,0,0,0" VerticalAlignment="Center" IsHitTestVisible="False"/>
+        </Grid>
 
-        <Grid Grid.Row="2" Grid.ColumnSpan="2" ColumnSpacing="24">
+        <!-- status line -->
+        <Grid Grid.Row="2" Grid.ColumnSpan="2" ColumnSpacing="10" Margin="2,6,2,10">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="{x:Bind Vm.ResultCountText, Mode=OneWay}" Style="{StaticResource HintTextStyle}" VerticalAlignment="Center"/>
+            <muxc:ProgressRing Grid.Column="1" IsActive="{x:Bind Vm.Searching, Mode=OneWay}" Width="18" Height="18"/>
+        </Grid>
+
+        <Grid Grid.Row="3" Grid.ColumnSpan="2" ColumnSpacing="28">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2.2*"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
+            <!-- results -->
             <Grid Grid.Column="0">
-                <muxc:ProgressRing IsActive="{x:Bind Vm.Searching, Mode=OneWay}" Width="28" Height="28"/>
-                <TextBlock Text="没有找到匹配的单词"
-                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                           HorizontalAlignment="Center" VerticalAlignment="Center"
-                           Visibility="{x:Bind Vm.NoResults, Mode=OneWay}"/>
-                <ListView ItemsSource="{x:Bind Vm.Results, Mode=OneWay}" SelectionMode="None" IsItemClickEnabled="True" ItemClick="OnWordClick">
+                <!-- initial state -->
+                <StackPanel x:Name="InitialHintPanel" VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="8">
+                    <FontIcon Glyph="&#xE721;" FontSize="26" Foreground="{ThemeResource TextFillColorTertiaryBrush}" HorizontalAlignment="Center"/>
+                    <TextBlock Text="输入关键词搜索词库" FontSize="14" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center"/>
+                </StackPanel>
+                <!-- no results -->
+                <StackPanel x:Name="EmptyResultsPanel" VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="8"
+                            Visibility="Collapsed">
+                    <FontIcon Glyph="&#xE7BA;" FontSize="26" Foreground="{ThemeResource TextFillColorTertiaryBrush}" HorizontalAlignment="Center"/>
+                    <TextBlock Text="没有找到匹配的单词" FontSize="14" HorizontalAlignment="Center"/>
+                    <TextBlock Text="换个拼写或更短的关键词试试" Style="{StaticResource HintTextStyle}" HorizontalAlignment="Center"/>
+                </StackPanel>
+                <ListView x:Name="ResultsList" ItemsSource="{x:Bind Vm.Results, Mode=OneWay}"
+                          SelectionMode="None" IsItemClickEnabled="True" ItemClick="OnWordClick">
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="ListViewItem">
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                            <Setter Property="Padding" Value="4,4"/>
+                            <Setter Property="MinHeight" Value="0"/>
+                        </Style>
+                    </ListView.ItemContainerStyle>
                     <ListView.ItemTemplate>
                         <DataTemplate x:DataType="vm:SearchResultItem">
-                            <StackPanel Spacing="2" Padding="0,6">
-                                <StackPanel Orientation="Horizontal" Spacing="10">
-                                    <TextBlock Text="{x:Bind Word.Lemma}" FontSize="18" FontWeight="SemiBold"/>
-                                    <TextBlock Text="{x:Bind Word.IpaUs}" Foreground="{ThemeResource TextFillColorTertiaryBrush}" FontSize="13" VerticalAlignment="Center"/>
+                            <Grid Padding="8,8" ColumnSpacing="12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Spacing="2" VerticalAlignment="Center">
+                                    <StackPanel Orientation="Horizontal" Spacing="10">
+                                        <TextBlock Text="{x:Bind Word.Lemma}" FontSize="16.5" FontWeight="SemiBold"/>
+                                        <TextBlock Text="{x:Bind Word.IpaUs}" Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                                                   FontSize="12.5" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                    <TextBlock FontSize="12.5" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"
+                                               Text="{x:Bind FirstLine}" MaxLines="2" TextTrimming="CharacterEllipsis"/>
                                 </StackPanel>
-                                <TextBlock FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"
-                                           Text="{x:Bind FirstLine}"/>
-                            </StackPanel>
+                                <FontIcon Grid.Column="1" Glyph="&#xE767;" FontSize="13"
+                                          Foreground="{ThemeResource TextFillColorTertiaryBrush}" VerticalAlignment="Center"/>
+                            </Grid>
                         </DataTemplate>
                     </ListView.ItemTemplate>
                 </ListView>
             </Grid>
 
-            <StackPanel Grid.Column="1" Spacing="8" Orientation="Vertical">
-                <TextBlock Text="词书" FontSize="16" FontWeight="SemiBold"/>
-                <TextBlock Text="{x:Bind Vm.ResultCountText, Mode=OneWay}" Foreground="{ThemeResource TextFillColorTertiaryBrush}" FontSize="12"/>
-                <ScrollViewer VerticalScrollBarVisibility="Auto">
-                    <ItemsControl ItemsSource="{x:Bind Vm.Decks, Mode=OneWay}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate x:DataType="models:DeckInfo">
-                                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                                        BorderThickness="1" CornerRadius="12"
-                                        Padding="14,10" Margin="0,0,0,8">
-                                    <Grid ColumnSpacing="8">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                        </Grid.ColumnDefinitions>
-                                        <StackPanel Spacing="2">
-                                            <TextBlock Text="{x:Bind Name}" FontSize="14" FontWeight="SemiBold" TextWrapping="Wrap"/>
-                                            <TextBlock Text="{x:Bind Description}" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
-                                        </StackPanel>
-                                        <TextBlock Grid.Column="1" Text="{x:Bind WordCount}" Style="{StaticResource MetricValue}" FontSize="18"/>
-                                    </Grid>
-                                </Border>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
+            <!-- decks -->
+            <StackPanel Grid.Column="1" Spacing="10" MinWidth="240">
+                <TextBlock Text="词书" Style="{StaticResource SectionHeader}"/>
+                <ScrollViewer VerticalScrollBarVisibility="Auto" VerticalAlignment="Stretch">
+                    <StackPanel Spacing="8">
+                        <StackPanel x:Name="DecksEmptyHint" Spacing="6" Visibility="Collapsed">
+                            <TextBlock Text="还没有词书" FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                            <TextBlock Text="内置词库会在首次启动时就绪；也可以从右上角导入 CSV / TXT" Style="{StaticResource HintTextStyle}" TextWrapping="Wrap"/>
+                        </StackPanel>
+                        <ItemsControl ItemsSource="{x:Bind Vm.Decks, Mode=OneWay}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="models:DeckInfo">
+                                    <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                            BorderThickness="1" CornerRadius="10"
+                                            Padding="14,12" Margin="0,0,0,2">
+                                        <Grid ColumnSpacing="12">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Spacing="2" VerticalAlignment="Center">
+                                                <TextBlock Text="{x:Bind Name}" FontSize="13.5" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                                                <TextBlock Text="{x:Bind Description}" FontSize="11"
+                                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" MaxLines="2" TextTrimming="CharacterEllipsis"/>
+                                            </StackPanel>
+                                            <TextBlock Grid.Column="1" Text="{x:Bind WordCount}" FontSize="19" FontWeight="SemiBold"
+                                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
                 </ScrollViewer>
-                <TextBlock Text="{x:Bind Vm.StatusText, Mode=OneWay}" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
+                <TextBlock Text="{x:Bind Vm.StatusText, Mode=OneWay}" Style="{StaticResource HintTextStyle}" TextWrapping="Wrap"/>
             </StackPanel>
         </Grid>
     </Grid>

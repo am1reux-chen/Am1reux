@@ -7,6 +7,19 @@ using Microsoft.UI.Xaml.Navigation;
 
 namespace Lexio.App.Pages;
 
+/// <summary>Pure visual choice: the Normal tier renders with the emphasized template.</summary>
+public sealed class TierTemplateSelector : DataTemplateSelector
+{
+    public DataTemplate? Normal { get; set; }
+    public DataTemplate? Other { get; set; }
+
+    protected override DataTemplate? SelectTemplateCore(object item)
+        => item is IntensityOption { Intensity: Lexico.Core.Domain.Intensity.Normal } ? Normal : Other;
+
+    protected override DataTemplate? SelectTemplateCore(object item, DependencyObject container)
+        => SelectTemplateCore(item);
+}
+
 public sealed partial class TodayPage : Page
 {
     public TodayViewModel Vm { get; }
