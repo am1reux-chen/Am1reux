@@ -1,0 +1,125 @@
+{
+  "format": "lexio-built-in-vocabulary",
+  "packVersion": 2,
+  "downloadedOn": "2026-10-18",
+  "packFile": "src/Lexico.Core/Dictionary/builtin-vocabulary.json",
+  "packBytes": 3885906,
+  "packSha256": "EA4B2D81FD964FFB01646C407EDD509A4050912490CD1EE854E11178D98581CC",
+  "license": {
+    "spdxId": "CC-BY-SA-4.0",
+    "url": "https://creativecommons.org/licenses/by-sa/4.0/"
+  },
+  "uniqueLemmas": 21985,
+  "deckMemberships": 26133,
+  "decks": [
+    {
+      "id": "common",
+      "name": "常见英语词汇",
+      "qualifiedHeadwords": 21985,
+      "entries": 21985,
+      "candidateForms": 203677,
+      "coveragePercent": 10.79
+    },
+    {
+      "id": "university",
+      "name": "大学学术词汇",
+      "qualifiedHeadwords": 753,
+      "entries": 753,
+      "candidateHeadwords": 957,
+      "coveragePercent": 78.68
+    },
+    {
+      "id": "ielts",
+      "name": "IELTS 备考核心",
+      "qualifiedHeadwords": 3395,
+      "entries": 3395,
+      "candidateHeadwords": 3766,
+      "coveragePercent": 90.15,
+      "officialIeltsList": false
+    }
+  ],
+  "overlapQualifiedHeadwords": {
+    "common-university": 753,
+    "common-ielts": 3395,
+    "university-ielts": 753
+  },
+  "sources": [
+    {
+      "name": "wordfreq English large frequency data",
+      "author": "Robyn Speer and wordfreq contributors",
+      "version": "3.0.2",
+      "commit": "372f6dbb3bd2ad4b675a3b18b94d44d0dd5fea8b",
+      "dataSnapshot": "Wordfreq README describes its frequency snapshot as through about 2021.",
+      "file": "large_en.msgpack.gz",
+      "bytes": 1494836,
+      "sha256": "DFFAE8066B78DCE0A6667CF5F58E567054F902674667090A7AC8A8A44628B05C",
+      "selectedForms": 200000,
+      "license": "CC-BY-SA-4.0",
+      "licenseSource": "https://github.com/rspeer/wordfreq/blob/372f6dbb3bd2ad4b675a3b18b94d44d0dd5fea8b/README.md"
+    },
+    {
+      "name": "FrequencyWords English frequency list",
+      "author": "hermitdave; OpenSubtitles 2018 contributors",
+      "version": "pinned commit 525f9b560de45753a5ea01069454e72e9aa541c6",
+      "file": "en_50k.txt",
+      "bytes": 622749,
+      "sha256": "5351FF405B1126EF555791DD4D9798A48E3E9A501A9FC481A9DA957752CFB458",
+      "uniqueForms": 49996,
+      "license": "CC-BY-SA-4.0",
+      "licenseSource": "https://github.com/hermitdave/FrequencyWords/tree/525f9b560de45753a5ea01069454e72e9aa541c6"
+    },
+    {
+      "name": "New General Service List",
+      "authors": [
+        "Charles Browne",
+        "Brent Culligan",
+        "Joseph Phillips"
+      ],
+      "version": "NGSL 1.2",
+      "file": "NGSL_12_stats.csv",
+      "bytes": 62566,
+      "sha256": "2098BAB8955A120A9766C6282A51D7D578C6CB0A7D946600D2FFB73BA25A0B44",
+      "license": "CC-BY-SA-4.0",
+      "source": "https://www.newgeneralservicelist.com/new-general-service-list"
+    },
+    {
+      "name": "New Academic Word List",
+      "authors": [
+        "Charles Browne",
+        "Brent Culligan",
+        "Joseph Phillips"
+      ],
+      "version": "NAWL 1.2",
+      "file": "NAWL_12_alphabetized_description.txt",
+      "bytes": 10340,
+      "sha256": "88A99099E10010EA40992CCA4A5119102D05A0F2888EE5D43D4C8B4AFD597FEF",
+      "license": "CC-BY-SA-4.0",
+      "source": "https://www.newgeneralservicelist.com/new-academic-word-list"
+    },
+    {
+      "name": "English Wiktionary Mandarin translations and parts of speech",
+      "authors": "Wiktionary contributors, extracted through Kaikki/Wiktextract",
+      "dumpDate": "2026-09-02",
+      "file": "raw-wiktextract-data.jsonl.gz",
+      "bytes": 2981058381,
+      "sha256": "3DAC8A09E57827BEF493E2E6B552FE917BF3B1FC55DEE05C4E4A3702AFF5DBDB",
+      "includedInApplication": false,
+      "license": "CC-BY-SA-4.0",
+      "source": "https://kaikki.org/dictionary/rawdata.html",
+      "licenseSource": "https://en.wiktionary.org/wiki/Wiktionary:Copyrights"
+    }
+  ],
+  "transformations": [
+    "Normalize lemmas and forms with Unicode NFKC and case folding; match the 200000 most frequent wordfreq English forms plus the 50000-form FrequencyWords list against English Wiktionary lemmas and inflections.",
+    "Keep only lexical headwords with Mandarin (cmn or non-dialect zh) translations containing Chinese characters and a Wiktionary part of speech; exclude proper nouns, the name POS, phrases and non-lexical surface forms.",
+    "Deduplicate within each deck by case-insensitive lemma; retain overlapping cards separately across decks.",
+    "Map Wiktionary POS names to Lexio labels and deduplicate senses by POS and Chinese gloss; no IPA, example sentences or manual sense review were added.",
+    "Use wordfreq bucket order for an exact lemma when present, then exact FrequencyWords rank, then the best matching inflected-form frequency as a fallback."
+  ],
+  "auditEvidence": {
+    "candidateFile": "candidate-lexicon-v6.jsonl",
+    "bytes": 8553090,
+    "sha256": "15869D3C9FC71BB6378500F192A5EB6CDB6C35068F1603F0277112EFE63D2A04",
+    "note": "Full source audit JSONL and raw Wiktextract input are retained in the local audit temp directory, not shipped in the app."
+  }
+}

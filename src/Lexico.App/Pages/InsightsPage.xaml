@@ -6,7 +6,7 @@
     xmlns:vm="using:Lexio.ViewModels"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls">
 
-    <Grid Padding="40,32,40,28">
+    <Grid Padding="40,32,40,28" RowSpacing="4">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -15,12 +15,24 @@
         <StackPanel Grid.Row="0" Spacing="3">
             <TextBlock Text="Insights" Style="{StaticResource PageTitle}"/>
             <TextBlock Text="记忆状态 · 近期表现 · 未来负载" Style="{StaticResource PageSubtitle}"/>
+            <Grid ColumnSpacing="8" Visibility="{x:Bind LoadErrorVisibility(Vm.LoadError), Mode=OneWay}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="{x:Bind Vm.LoadError, Mode=OneWay}" TextWrapping="Wrap" VerticalAlignment="Center"
+                           Foreground="{ThemeResource SystemFillColorCautionBrush}"/>
+                <Button Grid.Column="1" Content="重试" Command="{x:Bind Vm.RetryCommand}"
+                        Style="{StaticResource GhostButtonStyle}" Padding="12,6"/>
+            </Grid>
         </StackPanel>
 
         <Grid Grid.Row="1">
             <muxc:ProgressRing IsActive="{x:Bind Vm.Loading, Mode=OneWay}" Width="32" Height="32"/>
-            <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-                <StackPanel Spacing="22" MaxWidth="860" HorizontalAlignment="Left">
+            <ScrollViewer x:Name="InsightsScroller" HorizontalScrollMode="Disabled" HorizontalScrollBarVisibility="Disabled"
+                          VerticalScrollBarVisibility="Auto" HorizontalContentAlignment="Left">
+                <StackPanel Spacing="28" Width="{Binding ViewportWidth, ElementName=InsightsScroller}" MaxWidth="960"
+                            HorizontalAlignment="Left" Margin="0,0,0,8">
 
                     <!-- memory state -->
                     <StackPanel Spacing="10">
@@ -65,17 +77,17 @@
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
                                 <StackPanel Grid.Column="0">
-                                    <TextBlock Text="{x:Bind Vm.ReviewsToday, Mode=OneWay}" Style="{StaticResource MetricValue}" FontSize="22"/>
+                                    <TextBlock Text="{x:Bind Vm.ReviewsToday, Mode=OneWay}" Style="{StaticResource MetricValue}" FontSize="28"/>
                                     <TextBlock Text="今日复习" Style="{StaticResource MetricLabel}"/>
                                 </StackPanel>
                                 <Rectangle Grid.Column="1" Width="1" Fill="{ThemeResource DividerStrokeColorDefaultBrush}" Margin="18,2"/>
                                 <StackPanel Grid.Column="2">
-                                    <TextBlock Text="{x:Bind Vm.RetentionText, Mode=OneWay}" Style="{StaticResource MetricValue}" FontSize="22"/>
+                                    <TextBlock Text="{x:Bind Vm.RetentionText, Mode=OneWay}" Style="{StaticResource MetricValue}" FontSize="28"/>
                                     <TextBlock Text="30 天记住率" Style="{StaticResource MetricLabel}"/>
                                 </StackPanel>
                                 <Rectangle Grid.Column="3" Width="1" Fill="{ThemeResource DividerStrokeColorDefaultBrush}" Margin="18,2"/>
                                 <StackPanel Grid.Column="4">
-                                    <TextBlock Text="{x:Bind Vm.TotalReviewsText, Mode=OneWay}" Style="{StaticResource MetricValue}" FontSize="22"/>
+                                    <TextBlock Text="{x:Bind Vm.TotalReviewsText, Mode=OneWay}" Style="{StaticResource MetricValue}" FontSize="28"/>
                                     <TextBlock Text="累计复习" Style="{StaticResource MetricLabel}"/>
                                 </StackPanel>
                             </Grid>
@@ -88,40 +100,47 @@
                         <Border Style="{StaticResource MetricCardStyle}" Padding="24,20">
                             <StackPanel Spacing="14">
                                 <TextBlock Text="{x:Bind Vm.UpcomingText, Mode=OneWay}" Style="{StaticResource HintTextStyle}"/>
-                                <ItemsControl ItemsSource="{x:Bind Vm.Bars, Mode=OneWay}" HorizontalAlignment="Center">
-                                    <ItemsControl.ItemsPanel>
-                                        <ItemsPanelTemplate>
-                                            <StackPanel Orientation="Horizontal" Spacing="20"/>
-                                        </ItemsPanelTemplate>
-                                    </ItemsControl.ItemsPanel>
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate x:DataType="vm:BarItem">
-                                            <StackPanel Width="46" VerticalAlignment="Bottom" Spacing="6">
-                                                <TextBlock Text="{x:Bind Count}" HorizontalAlignment="Center" FontSize="12"
-                                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                                                <Border Height="{x:Bind Height, Mode=OneWay}" Width="22"
-                                                        HorizontalAlignment="Center" VerticalAlignment="Bottom"
-                                                        Background="{ThemeResource AccentFillColorSecondaryBrush}"
-                                                        CornerRadius="4,4,2,2}"/>
-                                            </StackPanel>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
-                                <Rectangle Height="1" Fill="{ThemeResource DividerStrokeColorDefaultBrush}" Margin="-24,0"/>
-                                <ItemsControl ItemsSource="{x:Bind Vm.Bars, Mode=OneWay}" HorizontalAlignment="Center">
-                                    <ItemsControl.ItemsPanel>
-                                        <ItemsPanelTemplate>
-                                            <StackPanel Orientation="Horizontal" Spacing="20"/>
-                                        </ItemsPanelTemplate>
-                                    </ItemsControl.ItemsPanel>
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate x:DataType="vm:BarItem">
-                                            <TextBlock Text="{x:Bind Label}" Width="46" HorizontalAlignment="Center"
-                                                       FontSize="10.5" Foreground="{ThemeResource TextFillColorTertiaryBrush}"
-                                                       TextAlignment="Center"/>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
+                                <!-- Chart scrolls horizontally only when the card gets narrower
+                                     than the 7-day row; at normal widths no scrollbar appears. -->
+                                <ScrollViewer HorizontalScrollBarVisibility="Auto" HorizontalScrollMode="Auto"
+                                              VerticalScrollMode="Disabled" VerticalScrollBarVisibility="Hidden">
+                                    <StackPanel MinWidth="380" HorizontalAlignment="Center">
+                                        <ItemsControl ItemsSource="{x:Bind Vm.Bars, Mode=OneWay}" HorizontalAlignment="Center">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <StackPanel Orientation="Horizontal" Spacing="8"/>
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate x:DataType="vm:BarItem">
+                                                    <StackPanel Width="60" VerticalAlignment="Bottom" Spacing="8">
+                                                        <TextBlock Text="{x:Bind Count}" HorizontalAlignment="Center" FontSize="13"
+                                                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                                        <Border Height="{x:Bind Height, Mode=OneWay}" Width="22"
+                                                                HorizontalAlignment="Center" VerticalAlignment="Bottom"
+                                                                Background="{ThemeResource LexioAccentBrush}"
+                                                                CornerRadius="4,4,2,2"/>
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                        <Rectangle Height="1" Fill="{ThemeResource DividerStrokeColorDefaultBrush}"/>
+                                        <ItemsControl ItemsSource="{x:Bind Vm.Bars, Mode=OneWay}" HorizontalAlignment="Center">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <StackPanel Orientation="Horizontal" Spacing="8"/>
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate x:DataType="vm:BarItem">
+                                                    <TextBlock Text="{x:Bind Label}" Width="60" HorizontalAlignment="Center"
+                                                               FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                               TextAlignment="Center"/>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
+                                </ScrollViewer>
                             </StackPanel>
                         </Border>
                     </StackPanel>

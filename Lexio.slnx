@@ -5,5 +5,6 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Lexico.Core.Tests/Lexico.Core.Tests.csproj" />
+    <Project Path="tests/Lexico.App.Tests/Lexico.App.Tests.csproj" />
   </Folder>
 </Solution>

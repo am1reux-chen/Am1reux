@@ -10,8 +10,10 @@
             x:Name="Nav"
             IsBackButtonVisible="Collapsed"
             IsSettingsVisible="False"
-            PaneDisplayMode="Left"
-            OpenPaneLength="216">
+            PaneDisplayMode="Auto"
+            CompactModeThresholdWidth="720"
+            ExpandedModeThresholdWidth="1100"
+            OpenPaneLength="208">
             <muxc:NavigationView.MenuItems>
                 <muxc:NavigationViewItem Content="Today" Tag="today">
                     <muxc:NavigationViewItem.Icon>
@@ -28,6 +30,11 @@
                         <FontIcon Glyph="&#xE8F1;"/>
                     </muxc:NavigationViewItem.Icon>
                 </muxc:NavigationViewItem>
+                <muxc:NavigationViewItem Content="Articles" Tag="articles">
+                    <muxc:NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE8A5;"/>
+                    </muxc:NavigationViewItem.Icon>
+                </muxc:NavigationViewItem>
                 <muxc:NavigationViewItem Content="Insights" Tag="insights">
                     <muxc:NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE9D2;"/>
@@ -39,5 +46,26 @@
                 <Frame x:Name="ContentFrame"/>
             </Grid>
         </muxc:NavigationView>
+        <Grid x:Name="RestoreProgressOverlay"
+              Visibility="Collapsed"
+              IsHitTestVisible="True"
+              Background="{ThemeResource LexioPauseScrimBrush}">
+            <Border HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="12"
+                    Padding="28,24">
+                <StackPanel HorizontalAlignment="Center" Spacing="12">
+                    <ProgressRing x:Name="RestoreProgressRing" Width="32" Height="32" IsActive="False"
+                                  HorizontalAlignment="Center"/>
+                    <TextBlock Text="正在校验并恢复备份…" FontSize="16" FontWeight="SemiBold"
+                               HorizontalAlignment="Center"/>
+                    <TextBlock Text="恢复期间请等待完成。" Style="{StaticResource HintTextStyle}"
+                               HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Border>
+        </Grid>
     </Grid>
 </Window>

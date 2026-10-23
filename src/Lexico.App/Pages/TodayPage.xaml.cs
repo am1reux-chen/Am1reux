@@ -24,10 +24,17 @@ public sealed partial class TodayPage : Page
 {
     public TodayViewModel Vm { get; }
 
+    public Visibility LoadErrorVisibility(string? error) =>
+        string.IsNullOrWhiteSpace(error) ? Visibility.Collapsed : Visibility.Visible;
+
+    public Visibility NoTasksVisibility(bool noTasks) => noTasks ? Visibility.Visible : Visibility.Collapsed;
+
     public TodayPage()
     {
         InitializeComponent();
-        Vm = new TodayViewModel(AppServices.Instance);
+        Vm = new TodayViewModel(AppServices.Instance,
+            error => StartupFailureReporter.WriteTechnicalError(error, AppServices.StartupLogPath,
+                "performing Today operation failed"));
         DataContext = Vm;
         Vm.SessionStarted += NavigateToLearn;
     }
@@ -63,5 +70,13 @@ public sealed partial class TodayPage : Page
         {
             DispatcherQueue.TryEnqueue(() => { if (App.MainAppWindow is MainWindow w) w.NavigateTo(typeof(LearnPage)); });
         }
+    }
+
+    private async void StudyDeckPicker_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (Vm.Loading || sender is not ComboBox { SelectedItem: StudyDeckChoice choice })
+            return;
+
+        await Vm.SelectDeckAsync(choice);
     }
 }

@@ -6,7 +6,7 @@
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:vm="using:Lexio.ViewModels">
 
-    <Grid Padding="52,28,52,24">
+    <Grid x:Name="LearnRoot" Padding="32,28,32,24">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -29,19 +29,29 @@
                 <ProgressBar Grid.Column="1" Value="{x:Bind Vm.ProgressFraction, Mode=OneWay}" Maximum="1"
                              Height="4" CornerRadius="2" VerticalAlignment="Center"/>
             </Grid>
-            <Button Grid.Column="1" Command="{x:Bind Vm.EndCommand}" Content="结束"
-                    Style="{StaticResource GhostButtonStyle}" Padding="14,7" FontSize="13"
-                    ToolTipService.ToolTip="结束本次学习 (Esc)">
-                <Button.KeyboardAccelerators>
-                    <KeyboardAccelerator Key="Escape"/>
-                </Button.KeyboardAccelerators>
-            </Button>
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                <Button x:Name="PauseButton" Command="{x:Bind Vm.PauseCommand}" Style="{StaticResource GhostButtonStyle}"
+                        Padding="12,7" ToolTipService.ToolTip="暂停 (P)"
+                        AutomationProperties.Name="{x:Bind Vm.PauseButtonAccessibleName, Mode=OneWay}">
+                    <Button.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="P" IsEnabled="{x:Bind Vm.PauseShortcutEnabled, Mode=OneWay}" ScopeOwner="{x:Bind LearnRoot}"/>
+                    </Button.KeyboardAccelerators>
+                    <FontIcon x:Name="PauseIcon" Glyph="&#xE768;" FontSize="14"/>
+                </Button>
+                <Button Command="{x:Bind Vm.EndCommand}" Content="结束"
+                        Style="{StaticResource GhostButtonStyle}" Padding="14,7" FontSize="13"
+                        ToolTipService.ToolTip="结束本次学习 (Esc)">
+                    <Button.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="Escape" IsEnabled="{x:Bind Vm.EndShortcutEnabled, Mode=OneWay}" ScopeOwner="{x:Bind LearnRoot}"/>
+                    </Button.KeyboardAccelerators>
+                </Button>
+            </StackPanel>
         </Grid>
 
         <!-- idle -->
         <StackPanel Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="8"
-                    Visibility="{x:Bind Vm.ShowIdle, Mode=OneWay}">
-            <FontIcon Glyph="&#xE8BD;" FontSize="34" Foreground="{ThemeResource TextFillColorTertiaryBrush}" HorizontalAlignment="Center"/>
+                    Visibility="{x:Bind IdlePanelVisibility(Vm.ShowIdle, Vm.ShowPaused), Mode=OneWay}">
+            <FontIcon Glyph="&#xE8BD;" FontSize="34" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center"/>
             <TextBlock Text="现在没有进行中的学习" FontSize="19" HorizontalAlignment="Center" Margin="0,6,0,0"/>
             <TextBlock Text="回到 Today 选择今日强度" Style="{StaticResource HintTextStyle}" HorizontalAlignment="Center"/>
         </StackPanel>
@@ -54,11 +64,11 @@
                 <FontIcon Glyph="&#xE73E;" FontSize="26" Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}"
                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
             </Border>
-            <TextBlock Text="今日完成" Style="{StaticResource HintTextStyle}" HorizontalAlignment="Center"/>
+            <TextBlock Text="学习总结" Style="{StaticResource HintTextStyle}" HorizontalAlignment="Center"/>
             <TextBlock Text="{x:Bind Vm.SummaryText, Mode=OneWay}" FontSize="30" FontWeight="SemiBold" HorizontalAlignment="Center"/>
             <TextBlock Text="{x:Bind Vm.SummaryDetail, Mode=OneWay}" FontSize="13"
                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center" Margin="0,4,0,0"/>
-            <Button Content="返回 Today" Click="OnBackToToday" HorizontalAlignment="Center" Margin="0,22,0,0"
+            <Button x:Name="ReturnToTodayButton" Content="返回 Today" Click="OnBackToToday" HorizontalAlignment="Center" Margin="0,22,0,0"
                     Style="{StaticResource GhostButtonStyle}" Padding="20,10"/>
         </StackPanel>
 
@@ -72,121 +82,286 @@
         </StackPanel>
 
         <!-- the card -->
-        <Grid x:Name="CardPanel" Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Stretch" MaxWidth="720"
-              Visibility="{x:Bind Vm.ShowCard, Mode=OneWay}">
-            <StackPanel HorizontalAlignment="Center">
-
-                <StackPanel Orientation="Horizontal" Spacing="16" HorizontalAlignment="Center">
-                    <Border Visibility="{x:Bind VisibleWhenText(Vm.NewBadge), Mode=OneWay}"
+        <Grid x:Name="CardPanel" Grid.Row="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" MaxWidth="760" Margin="0,32,0,16"
+              Visibility="{x:Bind CardAreaVisibility(Vm.ShowCard, Vm.ShowPaused), Mode=OneWay}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Grid Grid.Row="0" MinHeight="168" Visibility="{x:Bind Vm.ShowLemma, Mode=OneWay}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid Grid.Row="0" ColumnSpacing="16" HorizontalAlignment="Stretch">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Border Grid.Column="0" Visibility="{x:Bind VisibleWhenText(Vm.NewBadge), Mode=OneWay}"
                             Background="{ThemeResource AccentFillColorSecondaryBrush}" CornerRadius="4" Padding="7,3"
                             VerticalAlignment="Center" Margin="0,0,-4,0">
                         <TextBlock Text="NEW" FontSize="11" FontWeight="SemiBold"
                                    Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}"/>
                     </Border>
-                    <TextBlock Text="{x:Bind Vm.Lemma, Mode=OneWay}" FontSize="60" FontWeight="SemiBold"
+                    <TextBlock Grid.Column="1" Text="{x:Bind Vm.Lemma, Mode=OneWay}" FontSize="60" FontWeight="SemiBold"
                                FontFamily="Segoe UI Variable Display" TextWrapping="Wrap" TextAlignment="Center"
-                               MaxWidth="560" VerticalAlignment="Center"/>
-                    <Button Command="{x:Bind Vm.SpeakCommand}" ToolTipService.ToolTip="发音 (E)"
-                            Style="{StaticResource RoundIconButtonStyle}" VerticalAlignment="Center">
+                               MaxWidth="560" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                    <Button Grid.Column="2" Command="{x:Bind Vm.SpeakCommand}" ToolTipService.ToolTip="发音 (E)"
+                            Style="{StaticResource RoundIconButtonStyle}" VerticalAlignment="Center"
+                            AutomationProperties.Name="发音">
                         <Button.KeyboardAccelerators>
-                            <KeyboardAccelerator Key="E"/>
+                            <KeyboardAccelerator Key="E" IsEnabled="{x:Bind Vm.SpeakShortcutEnabled, Mode=OneWay}" ScopeOwner="{x:Bind LearnRoot}"/>
                         </Button.KeyboardAccelerators>
                         <FontIcon Glyph="&#xE767;" FontSize="16"/>
                     </Button>
-                </StackPanel>
+                </Grid>
 
-                <TextBlock Text="{x:Bind Vm.Ipa, Mode=OneWay}" FontSize="17"
+                <TextBlock Grid.Row="1" Text="{x:Bind Vm.IpaDisplay, Mode=OneWay}" FontSize="18"
                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                           HorizontalAlignment="Center" Margin="0,10,0,0"
+                           HorizontalAlignment="Center" Margin="0,10,0,0" TextWrapping="Wrap" MaxWidth="560"
                            Visibility="{x:Bind Vm.ShowIpa, Mode=OneWay}"/>
+            </Grid>
 
+            <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8"
+                        Margin="0,0,0,10" Visibility="{x:Bind Vm.ShowMarkControls, Mode=OneWay}">
+                <ToggleButton Content="★ 收藏" Tag="Favorite" IsChecked="{x:Bind Vm.IsFavorite, Mode=OneWay}"
+                              Click="OnCurrentMarkToggleClick" Padding="12,6" AutomationProperties.Name="收藏当前单词"/>
+                <ToggleButton Content="✓ 已掌握" Tag="Mastered" IsChecked="{x:Bind Vm.IsMastered, Mode=OneWay}"
+                              Click="OnCurrentMarkToggleClick" Padding="12,6" AutomationProperties.Name="标记当前单词已掌握"/>
+                <TextBlock Text="{x:Bind Vm.MarkFeedback, Mode=OneWay}" VerticalAlignment="Center"
+                           Foreground="{ThemeResource SystemFillColorCautionBrush}" TextWrapping="Wrap"/>
+            </StackPanel>
+
+            <Grid Grid.Row="2">
                 <!-- question -->
-                <StackPanel HorizontalAlignment="Center" Margin="0,44,0,0" Spacing="8"
-                            Visibility="{x:Bind HiddenWhen(Vm.Revealed), Mode=OneWay}">
-                    <Button Command="{x:Bind Vm.RevealCommand}" Content="显示释义"
-                            Style="{StaticResource GhostButtonStyle}" Padding="26,12" FontSize="15">
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,24,0,0" Spacing="10"
+                            Visibility="{x:Bind Vm.ShowQuestion, Mode=OneWay}">
+                    <Button x:Name="RevealButton" Command="{x:Bind Vm.RevealCommand}" Content="显示释义"
+                            Style="{StaticResource AccentButtonStyle}" Padding="28,12" FontSize="15" CornerRadius="10">
                         <Button.KeyboardAccelerators>
-                            <KeyboardAccelerator Key="Space"/>
+                            <KeyboardAccelerator Key="Space" IsEnabled="{x:Bind Vm.RevealShortcutEnabled, Mode=OneWay}" ScopeOwner="{x:Bind LearnRoot}"/>
                         </Button.KeyboardAccelerators>
                     </Button>
                     <TextBlock Text="Space" Style="{StaticResource HintTextStyle}" HorizontalAlignment="Center"/>
                 </StackPanel>
 
+                <!-- typed practice -->
+                <StackPanel x:Name="InputPracticePanel" HorizontalAlignment="Center" VerticalAlignment="Top"
+                            MaxWidth="560" Margin="12,24,12,0" Spacing="12"
+                            Visibility="{x:Bind Vm.ShowInputPanel, Mode=OneWay}">
+                    <TextBlock Text="{x:Bind Vm.InputPrompt, Mode=OneWay}" FontSize="17" FontWeight="SemiBold"
+                               TextAlignment="Center" TextWrapping="Wrap"/>
+                    <TextBlock Text="{x:Bind Vm.MeaningPrompt, Mode=OneWay}" FontSize="18" TextAlignment="Center"
+                               TextWrapping="Wrap" Visibility="{x:Bind Vm.ShowMeaningPrompt, Mode=OneWay}"/>
+                    <TextBox x:Name="PracticeInputBox" Text="{x:Bind Vm.InputText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             IsEnabled="{x:Bind Vm.CanEditInput, Mode=OneWay}" PlaceholderText="输入单词"
+                             FontSize="21" TextAlignment="Center" MaxWidth="520" HorizontalAlignment="Stretch"
+                             GotFocus="PracticeInputBox_GotFocus" LostFocus="PracticeInputBox_LostFocus"
+                             KeyDown="PracticeInputBox_KeyDown"/>
+                    <Button Content="提交答案" Command="{x:Bind Vm.SubmitInputCommand}" IsEnabled="{x:Bind Vm.CanSubmitInput, Mode=OneWay}"
+                            HorizontalAlignment="Center" Style="{StaticResource AccentButtonStyle}"
+                            CornerRadius="10" Padding="28,10"/>
+                    <TextBlock Text="{x:Bind Vm.InputFeedback, Mode=OneWay}" Visibility="{x:Bind Vm.ShowInputFeedback, Mode=OneWay}"
+                               TextAlignment="Center" TextWrapping="Wrap" Style="{StaticResource HintTextStyle}"/>
+                    <Button Content="重播发音" Command="{x:Bind Vm.DictationReplayCommand}"
+                            Visibility="{x:Bind Vm.ShowDictationReplay, Mode=OneWay}"
+                            HorizontalAlignment="Center" Style="{StaticResource GhostButtonStyle}" Padding="16,8">
+                        <Button.KeyboardAccelerators>
+                            <KeyboardAccelerator Key="R" IsEnabled="{x:Bind Vm.ReplayShortcutEnabled, Mode=OneWay}" ScopeOwner="{x:Bind LearnRoot}"/>
+                        </Button.KeyboardAccelerators>
+                    </Button>
+                    <TextBlock Text="{x:Bind Vm.SpeechError, Mode=OneWay}" Visibility="{x:Bind Vm.ShowSpeechError, Mode=OneWay}"
+                               TextAlignment="Center" TextWrapping="Wrap" Foreground="{ThemeResource SystemFillColorCautionBrush}"/>
+                    <Button Content="下一题" Command="{x:Bind Vm.ContinueCommand}" IsEnabled="{x:Bind Vm.ShowContinue, Mode=OneWay}"
+                            Visibility="{x:Bind Vm.ShowContinue, Mode=OneWay}" HorizontalAlignment="Center"
+                            Style="{StaticResource AccentButtonStyle}" CornerRadius="10" Padding="28,10"/>
+                </StackPanel>
+
+                <StackPanel x:Name="InputUnavailablePanel" HorizontalAlignment="Center" VerticalAlignment="Top"
+                            MaxWidth="560" Margin="12,24,12,0" Spacing="10"
+                            Visibility="{x:Bind Vm.ShowInputUnavailable, Mode=OneWay}">
+                    <TextBlock Text="这张卡片没有可用释义，无法进行看义拼写。请结束本次学习，再选择回忆、跟写或听写。"
+                               TextAlignment="Center" TextWrapping="Wrap" Style="{StaticResource HintTextStyle}"/>
+                    <Button Content="结束本次学习" Command="{x:Bind Vm.EndCommand}" HorizontalAlignment="Center"
+                            Style="{StaticResource GhostButtonStyle}" Padding="18,8"/>
+                </StackPanel>
+
+                <!-- self-test choices -->
+                <StackPanel x:Name="SelfTestPanel" HorizontalAlignment="Center" VerticalAlignment="Top"
+                            MaxWidth="560" Margin="12,24,12,0" Spacing="10"
+                            Visibility="{x:Bind Vm.ShowSelfTestPanel, Mode=OneWay}">
+                    <TextBlock Text="选择这个单词对应的释义" FontSize="17" FontWeight="SemiBold"
+                               TextAlignment="Center" TextWrapping="Wrap"/>
+                    <ItemsControl ItemsSource="{x:Bind Vm.SelfTestChoices, Mode=OneWay}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate><StackPanel Spacing="8"/></ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:SelfTestChoice">
+                                <Button Content="{x:Bind Text}" Click="OnSelfTestChoiceClick"
+                                        HorizontalAlignment="Stretch" Style="{StaticResource GradeButtonStyle}"
+                                        Padding="16,12" MinWidth="0"/>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+                <StackPanel x:Name="SelfTestUnavailablePanel" HorizontalAlignment="Center" VerticalAlignment="Top"
+                            MaxWidth="560" Margin="12,24,12,0" Spacing="10"
+                            Visibility="{x:Bind Vm.ShowSelfTestUnavailable, Mode=OneWay}">
+                    <TextBlock Text="{x:Bind Vm.SelfTestFeedback, Mode=OneWay}" TextAlignment="Center" TextWrapping="Wrap"
+                               Foreground="{ThemeResource SystemFillColorCautionBrush}"/>
+                    <Button Content="结束本次学习" Command="{x:Bind Vm.EndCommand}" HorizontalAlignment="Center"
+                            Style="{StaticResource GhostButtonStyle}" Padding="18,8"/>
+                </StackPanel>
+                <StackPanel x:Name="SelfTestResultPanel" HorizontalAlignment="Center" VerticalAlignment="Top"
+                            MaxWidth="560" Margin="12,24,12,0" Spacing="10"
+                            Visibility="{x:Bind Vm.ShowSelfTestResult, Mode=OneWay}">
+                    <TextBlock Text="{x:Bind Vm.SelfTestFeedback, Mode=OneWay}" TextAlignment="Center" TextWrapping="Wrap"
+                               Style="{StaticResource HintTextStyle}"/>
+                    <Button Content="下一题" Command="{x:Bind Vm.ContinueCommand}" HorizontalAlignment="Center"
+                            Style="{StaticResource AccentButtonStyle}" CornerRadius="10" Padding="28,10"/>
+                </StackPanel>
+
                 <!-- answer -->
-                <StackPanel x:Name="AnswerPanel" Spacing="0" Margin="0,32,0,0" HorizontalAlignment="Stretch"
-                            Visibility="{x:Bind Vm.Revealed, Mode=OneWay}">
+                <ScrollViewer x:Name="AnswerScroller" IsTabStop="True" UseSystemFocusVisuals="False" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" HorizontalContentAlignment="Stretch"
+                              Visibility="{x:Bind Vm.ShowAnswerPanel, Mode=OneWay}">
+                <StackPanel x:Name="AnswerPanel" Spacing="0" Margin="0,12,0,8" HorizontalAlignment="Stretch">
                     <ItemsControl ItemsSource="{x:Bind Vm.Senses, Mode=OneWay}" HorizontalAlignment="Center">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="vm:SenseLine">
                                 <StackPanel Spacing="3" Margin="0,0,0,14" HorizontalAlignment="Left">
                                     <TextBlock Text="{x:Bind Gloss}" FontSize="19" TextWrapping="Wrap" MaxWidth="600"/>
-                                    <TextBlock Text="{x:Bind Example}" FontSize="13.5" TextWrapping="Wrap" MaxWidth="600"
+                                    <TextBlock Text="{x:Bind Example}" FontSize="14" TextWrapping="Wrap" MaxWidth="600"
                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontStyle="Italic"
-                                               Visibility="{x:Bind HasExample, Mode=OneWay}"/>
+                                               Visibility="{x:Bind HasExample, Mode=OneTime}"/>
                                 </StackPanel>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
 
-                    <StackPanel Orientation="Horizontal" Spacing="12" HorizontalAlignment="Center" Margin="0,14,0,0">
+                    <ItemsControl ItemsSource="{x:Bind Vm.DetailSections, Mode=OneWay}" HorizontalAlignment="Center">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:WordDetailSection">
+                                <StackPanel Spacing="8" Margin="0,2,0,12" HorizontalAlignment="Stretch" MaxWidth="600">
+                                    <TextBlock Text="{x:Bind Title}" FontSize="13" FontWeight="SemiBold"
+                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                    <ItemsControl ItemsSource="{x:Bind Lines}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="vm:WordDetailLine">
+                                                <StackPanel Spacing="2" Margin="0,0,0,5">
+                                                    <TextBlock Text="{x:Bind Primary}" FontSize="15" TextWrapping="Wrap"/>
+                                                    <TextBlock Text="{x:Bind Secondary}" FontSize="13" TextWrapping="Wrap"
+                                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                               Visibility="{x:Bind HasSecondary, Mode=OneTime}"/>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <TextBlock Text="{x:Bind Vm.InputFeedback, Mode=OneWay}"
+                               Visibility="{x:Bind Vm.ShowTypedFeedback, Mode=OneWay}"
+                               Style="{StaticResource HintTextStyle}" TextAlignment="Center" TextWrapping="Wrap"/>
+
+                    <TextBlock Text="这张卡片没有释义，不能评分。请结束本次学习，补充词义后重新开始。"
+                               Visibility="{x:Bind Vm.ShowMissingMeaning, Mode=OneWay}"
+                               Style="{StaticResource HintTextStyle}" TextWrapping="Wrap" TextAlignment="Center"
+                               HorizontalAlignment="Center" MaxWidth="560" Margin="0,20,0,0"/>
+
+                    <Grid HorizontalAlignment="Stretch" MaxWidth="560" Margin="0,20,0,0"
+                          Visibility="{x:Bind Vm.ShowGradeOptions, Mode=OneWay}">
                         <!-- 4-grade -->
-                        <StackPanel Visibility="{x:Bind Vm.FourGradeMode, Mode=OneWay}" Orientation="Horizontal" Spacing="12">
-                            <Button Command="{x:Bind Vm.GradeCommand}" CommandParameter="1" Style="{StaticResource GradeButtonStyle}">
-                                <Button.KeyboardAccelerators><KeyboardAccelerator Key="Number1"/></Button.KeyboardAccelerators>
+                        <Grid Visibility="{x:Bind Vm.FourGradeMode, Mode=OneWay}" ColumnSpacing="8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/><ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/><ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Button Grid.Column="0" Command="{x:Bind Vm.GradeCommand}" CommandParameter="1" Style="{StaticResource GradeButtonStyle}" MinWidth="0" HorizontalAlignment="Stretch">
+                                <Button.KeyboardAccelerators><KeyboardAccelerator Key="Number1" IsEnabled="{x:Bind Vm.FourGradeShortcutsEnabled, Mode=OneWay}" ScopeOwner="{x:Bind LearnRoot}"/></Button.KeyboardAccelerators>
                                 <StackPanel Spacing="1">
                                     <TextBlock Text="忘记" FontWeight="SemiBold" FontSize="14" HorizontalAlignment="Center"/>
-                                    <TextBlock Text="Again · 1" FontSize="10.5" Foreground="{ThemeResource TextFillColorTertiaryBrush}" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="Again · 1" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center"/>
                                 </StackPanel>
                             </Button>
-                            <Button Command="{x:Bind Vm.GradeCommand}" CommandParameter="2" Style="{StaticResource GradeButtonStyle}">
-                                <Button.KeyboardAccelerators><KeyboardAccelerator Key="Number2"/></Button.KeyboardAccelerators>
+                            <Button Grid.Column="1" Command="{x:Bind Vm.GradeCommand}" CommandParameter="2" Style="{StaticResource GradeButtonStyle}" MinWidth="0" HorizontalAlignment="Stretch">
+                                <Button.KeyboardAccelerators><KeyboardAccelerator Key="Number2" IsEnabled="{x:Bind Vm.FourGradeShortcutsEnabled, Mode=OneWay}" ScopeOwner="{x:Bind LearnRoot}"/></Button.KeyboardAccelerators>
                                 <StackPanel Spacing="1">
                                     <TextBlock Text="困难" FontWeight="SemiBold" FontSize="14" HorizontalAlignment="Center"/>
-                                    <TextBlock Text="Hard · 2" FontSize="10.5" Foreground="{ThemeResource TextFillColorTertiaryBrush}" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="Hard · 2" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center"/>
                                 </StackPanel>
                             </Button>
-                            <Button Command="{x:Bind Vm.GradeCommand}" CommandParameter="3" Style="{StaticResource AccentButtonStyle}"
-                                    CornerRadius="8" MinHeight="48" MinWidth="112">
-                                <Button.KeyboardAccelerators><KeyboardAccelerator Key="Number3"/></Button.KeyboardAccelerators>
+                            <Button Grid.Column="2" Command="{x:Bind Vm.GradeCommand}" CommandParameter="3" Style="{StaticResource AccentButtonStyle}"
+                                    CornerRadius="10" MinHeight="56" MinWidth="0" HorizontalAlignment="Stretch">
+                            <Button.KeyboardAccelerators><KeyboardAccelerator Key="Number3" IsEnabled="{x:Bind Vm.FourGradeShortcutsEnabled, Mode=OneWay}" ScopeOwner="{x:Bind LearnRoot}"/></Button.KeyboardAccelerators>
                                 <StackPanel Spacing="1">
                                     <TextBlock Text="良好" FontWeight="SemiBold" FontSize="14" HorizontalAlignment="Center"/>
-                                    <TextBlock Text="Good · 3" FontSize="10.5" Foreground="{ThemeResource TextFillColorTertiaryBrush}" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="Good · 3" FontSize="12" Foreground="{ThemeResource TextOnAccentFillColorSecondaryBrush}" HorizontalAlignment="Center"/>
                                 </StackPanel>
                             </Button>
-                            <Button Command="{x:Bind Vm.GradeCommand}" CommandParameter="4" Style="{StaticResource GradeButtonStyle}">
-                                <Button.KeyboardAccelerators><KeyboardAccelerator Key="Number4"/></Button.KeyboardAccelerators>
+                            <Button Grid.Column="3" Command="{x:Bind Vm.GradeCommand}" CommandParameter="4" Style="{StaticResource GradeButtonStyle}" MinWidth="0" HorizontalAlignment="Stretch">
+                            <Button.KeyboardAccelerators><KeyboardAccelerator Key="Number4" IsEnabled="{x:Bind Vm.FourGradeShortcutsEnabled, Mode=OneWay}" ScopeOwner="{x:Bind LearnRoot}"/></Button.KeyboardAccelerators>
                                 <StackPanel Spacing="1">
                                     <TextBlock Text="简单" FontWeight="SemiBold" FontSize="14" HorizontalAlignment="Center"/>
-                                    <TextBlock Text="Easy · 4" FontSize="10.5" Foreground="{ThemeResource TextFillColorTertiaryBrush}" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="Easy · 4" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center"/>
                                 </StackPanel>
                             </Button>
-                        </StackPanel>
+                        </Grid>
                         <!-- 2-grade -->
-                        <StackPanel Visibility="{x:Bind HiddenWhen(Vm.FourGradeMode), Mode=OneWay}" Orientation="Horizontal" Spacing="14">
-                            <Button Command="{x:Bind Vm.GradeCommand}" CommandParameter="1" Style="{StaticResource GradeButtonStyle}" MinWidth="148">
-                                <Button.KeyboardAccelerators><KeyboardAccelerator Key="Number1"/></Button.KeyboardAccelerators>
+                        <Grid Visibility="{x:Bind HiddenWhen(Vm.FourGradeMode), Mode=OneWay}" ColumnSpacing="12">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                            <Button Command="{x:Bind Vm.GradeCommand}" CommandParameter="1" Style="{StaticResource GradeButtonStyle}" MinWidth="0" HorizontalAlignment="Stretch">
+                            <Button.KeyboardAccelerators><KeyboardAccelerator Key="Number1" IsEnabled="{x:Bind Vm.SimpleGradeShortcutsEnabled, Mode=OneWay}" ScopeOwner="{x:Bind LearnRoot}"/></Button.KeyboardAccelerators>
                                 <StackPanel Spacing="1">
                                     <TextBlock Text="忘记" FontWeight="SemiBold" FontSize="15" HorizontalAlignment="Center"/>
-                                    <TextBlock Text="刚才没想起来 · 1" FontSize="10.5" Foreground="{ThemeResource TextFillColorTertiaryBrush}" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="刚才没想起来 · 1" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center"/>
                                 </StackPanel>
                             </Button>
-                            <Button Command="{x:Bind Vm.GradeCommand}" CommandParameter="3" Style="{StaticResource AccentButtonStyle}"
-                                    CornerRadius="8" MinHeight="48" MinWidth="148">
-                                <Button.KeyboardAccelerators><KeyboardAccelerator Key="Number3"/></Button.KeyboardAccelerators>
+                            <Button Grid.Column="1" Command="{x:Bind Vm.GradeCommand}" CommandParameter="3" Style="{StaticResource AccentButtonStyle}"
+                                    CornerRadius="10" MinHeight="56" MinWidth="0" HorizontalAlignment="Stretch">
+                            <Button.KeyboardAccelerators><KeyboardAccelerator Key="Number3" IsEnabled="{x:Bind Vm.SimpleGradeShortcutsEnabled, Mode=OneWay}" ScopeOwner="{x:Bind LearnRoot}"/></Button.KeyboardAccelerators>
                                 <StackPanel Spacing="1">
                                     <TextBlock Text="记得" FontWeight="SemiBold" FontSize="15" HorizontalAlignment="Center"/>
-                                    <TextBlock Text="想起来了 · 3" FontSize="10.5" Foreground="{ThemeResource TextFillColorTertiaryBrush}" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="想起来了 · 3" FontSize="12" Foreground="{ThemeResource TextOnAccentFillColorSecondaryBrush}" HorizontalAlignment="Center"/>
                                 </StackPanel>
                             </Button>
-                        </StackPanel>
-                    </StackPanel>
+                        </Grid>
+                    </Grid>
                 </StackPanel>
-            </StackPanel>
+                </ScrollViewer>
+            </Grid>
+        </Grid>
+
+        <!-- pause overlay (covers the card area only; header stays operational).
+             Driven by the ViewModel: ShowPaused = IsPaused && !Done. -->
+        <Grid x:Name="PauseOverlay" Grid.Row="1" Visibility="{x:Bind VisibleWhen(Vm.ShowPaused), Mode=OneWay}"
+              Background="{ThemeResource LexioPauseScrimBrush}">
+            <Border Style="{StaticResource MetricCardStyle}" Padding="32,28" MinWidth="248"
+                    HorizontalAlignment="Center" VerticalAlignment="Center">
+                <StackPanel Spacing="6" HorizontalAlignment="Center">
+                    <FontIcon Glyph="&#xE768;" FontSize="28" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center"/>
+                    <TextBlock Text="已暂停" FontSize="22" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,6,0,0"/>
+                    <TextBlock Text="暂停时长不会计入思考时间" Style="{StaticResource HintTextStyle}"
+                               HorizontalAlignment="Center" TextWrapping="Wrap"/>
+                    <Button x:Name="ResumeFromPauseButton" Content="继续学习" Command="{x:Bind Vm.ResumeCommand}"
+                            HorizontalAlignment="Center" Margin="0,16,0,0"
+                            Style="{StaticResource AccentButtonStyle}" CornerRadius="10" Padding="22,10">
+                    </Button>
+                    <TextBlock Text="P 继续 · Esc 结束本次学习" Style="{StaticResource HintTextStyle}"
+                               HorizontalAlignment="Center" Margin="0,12,0,0"/>
+                </StackPanel>
+            </Border>
         </Grid>
 
         <!-- keyboard hints -->
-        <TextBlock Grid.Row="2" Text="Space 显示释义 · 1–4 评分 · E 发音 · Esc 结束"
+        <TextBlock Grid.Row="2" Text="{x:Bind Vm.KeyboardHint, Mode=OneWay}"
                    Style="{StaticResource HintTextStyle}" HorizontalAlignment="Center"
+                   TextWrapping="Wrap"
                    Visibility="{x:Bind Vm.ShowCard, Mode=OneWay}"/>
     </Grid>
 </Page>

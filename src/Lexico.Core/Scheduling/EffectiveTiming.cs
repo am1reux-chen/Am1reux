@@ -3,7 +3,7 @@ using Lexico.Core.Domain;
 namespace Lexico.Core.Scheduling;
 
 /// <summary>
-/// Measures effective thinking time for one card: wall time minus unfocused
+/// Measures effective thinking time for one card: monotonic elapsed time minus unfocused
 /// (window deactivated) gaps. Effective time is an auxiliary calibration signal
 /// only — it never maps to a grade by itself.
 /// </summary>
@@ -12,9 +12,16 @@ public sealed class EffectiveTiming
     private const double MinValidMs = 300;
     private const double MaxValidMs = 120_000;
 
-    private readonly long _startTimestamp = DateTimeOffset.UtcNow.UtcTicks;
+    private readonly TimeProvider _timeProvider;
+    private readonly long _startTimestamp;
     private double _unfocusedMs;
     private readonly object _lock = new();
+
+    public EffectiveTiming(TimeProvider? timeProvider = null)
+    {
+        _timeProvider = timeProvider ?? TimeProvider.System;
+        _startTimestamp = _timeProvider.GetTimestamp();
+    }
 
     /// <summary>Record a window-deactivated span in milliseconds.</summary>
     public void AddUnfocused(double ms)
@@ -26,7 +33,7 @@ public sealed class EffectiveTiming
 
     public TimingResult Finish()
     {
-        double rawMs = (DateTimeOffset.UtcNow.UtcTicks - _startTimestamp) / TimeSpan.TicksPerMillisecond;
+        double rawMs = _timeProvider.GetElapsedTime(_startTimestamp).TotalMilliseconds;
         double unfocusedMs;
         lock (_lock) { unfocusedMs = _unfocusedMs; }
         double effectiveMs = Math.Max(0, rawMs - unfocusedMs);

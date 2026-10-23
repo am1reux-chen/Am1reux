@@ -1,0 +1,10 @@
+SQLite public-domain notice
+
+SQLite's core source code, including the SQLite library bundled through
+SQLitePCLRaw.lib.e_sqlite3, is dedicated to the public domain by its authors.
+The SQLite project states that the code may be copied, modified, published,
+used, compiled, sold, and distributed for any purpose. The SQLitePCLRaw NuGet
+packages themselves are separately licensed under Apache License 2.0; see
+Apache-2.0.txt.
+
+Canonical source: https://www.sqlite.org/copyright.html

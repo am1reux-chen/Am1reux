@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
     <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
     <RootNamespace>Lexio.App</RootNamespace>
     <AssemblyName>Lexio</AssemblyName>
@@ -11,10 +12,21 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
-    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.250916003" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.260921001" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.28000.2705" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Lexico.Core\Lexico.Core.csproj" />
+    <ProjectReference Include="..\Lexico.Core\Lexico.Core.csproj" AdditionalProperties="ExcludeStarterDictionaryFromPublish=$(ExcludeStarterDictionaryFromPublish)" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\THIRD-PARTY-NOTICES.md" Link="THIRD-PARTY-NOTICES.md" CopyToPublishDirectory="PreserveNewest" />
+    <None Include="..\..\licenses\**\*" Link="licenses\%(RecursiveDir)%(Filename)%(Extension)" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+  <Target Name="CopyWinUiXamlResourcesToUnpackagedPublish" AfterTargets="Publish" Condition="'$(WindowsPackageType)' == 'None'">
+    <ItemGroup>
+      <_WinUiXamlResource Include="$(TargetDir)*.xbf" />
+      <_WinUiPriResource Include="$(TargetDir)Lexio.pri" Condition="Exists('$(TargetDir)Lexio.pri')" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_WinUiXamlResource);@(_WinUiPriResource)" DestinationFolder="$(PublishDir)" SkipUnchangedFiles="true" />
+  </Target>
 </Project>

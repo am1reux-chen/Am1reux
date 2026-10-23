@@ -35,21 +35,20 @@ public interface ISrsEngine
     SchedulingOutcome Schedule(SrsCardSnapshot card, Grade grade, DateTime nowUtc, int? elapsedMs = null);
 }
 
-/// <summary>FSRS-6 via FSRS.Core 1.0.7 (py-fsrs port, MIT).</summary>
+/// <summary>FSRS-6 via FSRS.Core 1.0.7, with py-fsrs 6.3.2 conformance patches (MIT).</summary>
 public sealed class FsrsCoreEngine : ISrsEngine
 {
-    public const string EngineVersion = "fsrs-core/1.0.7";
+    public const string EngineVersion = "fsrs-core/1.0.7+lexio-fsrs6fix1";
 
     private readonly FSRS.Core.Interfaces.IScheduler _scheduler;
 
     public FsrsCoreEngine(double desiredRetention = 0.9, bool enableFuzzing = true)
     {
-        var options = new FSRS.Core.Configurations.SchedulerOptions
-        {
-            DesiredRetention = desiredRetention,
-            EnableFuzzing = enableFuzzing,
-        };
-        _scheduler = new FSRS.Core.Services.SchedulerFactory(options).CreateScheduler();
+        _scheduler = new FSRS.Core.Services.Scheduler(
+            desiredRetention: desiredRetention,
+            enableFuzzing: enableFuzzing,
+            retrievabilityCalculator: new ReferenceRetrievabilityCalculator(),
+            stabilityCalculator: new ReferenceStabilityCalculator());
     }
 
     public string Version => EngineVersion;
@@ -113,4 +112,49 @@ public sealed class FsrsCoreEngine : ISrsEngine
         FSRS.Core.Enums.State.Relearning => Domain.CardState.Relearning,
         _ => throw new ArgumentOutOfRangeException(nameof(s), s, null),
     };
+
+    /// <summary>FSRS uses whole elapsed days for retrievability, including fractional-day reviews.</summary>
+    private sealed class ReferenceRetrievabilityCalculator : FSRS.Core.Interfaces.IRetrievabilityCalculator
+    {
+        public double CalculateRetrievability(
+            FSRS.Core.Models.Card card,
+            DateTime? currentDateTime = null,
+            double[]? parameters = null)
+        {
+            if (card.LastReview is null || card.Stability is null)
+                return 0;
+
+            var now = currentDateTime ?? DateTime.UtcNow;
+            var weights = parameters ?? FSRS.Core.Constants.FsrsConstants.DefaultParameters;
+            var elapsedDays = Math.Max(0, (now - card.LastReview.Value).Days);
+            var decay = -weights[20];
+            var factor = Math.Pow(0.9, 1.0 / decay) - 1;
+            return Math.Pow(1 + factor * elapsedDays / card.Stability.Value, decay);
+        }
+    }
+
+    /// <summary>py-fsrs 6.3.2 floors same-day stability growth at 1 for Hard, Good, and Easy.</summary>
+    private sealed class ReferenceStabilityCalculator : FSRS.Core.Interfaces.IStabilityCalculator
+    {
+        private readonly FSRS.Core.Services.StabilityCalculator _inner = new();
+
+        public double CalculateInitialStability(FSRS.Core.Enums.Rating rating, double[] parameters)
+            => _inner.CalculateInitialStability(rating, parameters);
+
+        public double CalculateShortTermStability(double stability, FSRS.Core.Enums.Rating rating, double[] parameters)
+        {
+            var updated = _inner.CalculateShortTermStability(stability, rating, parameters);
+            return rating is FSRS.Core.Enums.Rating.Hard or FSRS.Core.Enums.Rating.Good or FSRS.Core.Enums.Rating.Easy
+                ? Math.Max(stability, updated)
+                : updated;
+        }
+
+        public double CalculateNextStability(
+            double difficulty,
+            double stability,
+            double retrievability,
+            FSRS.Core.Enums.Rating rating,
+            double[] parameters)
+            => _inner.CalculateNextStability(difficulty, stability, retrievability, rating, parameters);
+    }
 }

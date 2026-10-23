@@ -5,6 +5,29 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Application.Resources>
         <ResourceDictionary>
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Default">
+                    <SolidColorBrush x:Key="LexioAccentBrush" Color="#9BB9FF"/>
+                    <SolidColorBrush x:Key="LexioAccentSurfaceBrush" Color="#162439"/>
+                    <SolidColorBrush x:Key="LexioAccentStrokeBrush" Color="#3A5C8B"/>
+                    <x:Double x:Key="LexioDisabledOpacity">0.45</x:Double>
+                    <SolidColorBrush x:Key="LexioPauseScrimBrush" Color="#66000000"/>
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="Light">
+                    <SolidColorBrush x:Key="LexioAccentBrush" Color="#335FC0"/>
+                    <SolidColorBrush x:Key="LexioAccentSurfaceBrush" Color="#F0F5FF"/>
+                    <SolidColorBrush x:Key="LexioAccentStrokeBrush" Color="#AAC0EE"/>
+                    <x:Double x:Key="LexioDisabledOpacity">0.45</x:Double>
+                    <SolidColorBrush x:Key="LexioPauseScrimBrush" Color="#66000000"/>
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="HighContrast">
+                    <SolidColorBrush x:Key="LexioAccentBrush" Color="{ThemeResource SystemColorHighlightColor}"/>
+                    <SolidColorBrush x:Key="LexioAccentSurfaceBrush" Color="{ThemeResource SystemColorWindowColor}"/>
+                    <SolidColorBrush x:Key="LexioAccentStrokeBrush" Color="{ThemeResource SystemColorWindowTextColor}"/>
+                    <x:Double x:Key="LexioDisabledOpacity">1</x:Double>
+                    <SolidColorBrush x:Key="LexioPauseScrimBrush" Color="{ThemeResource SystemColorWindowColor}"/>
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
             <ResourceDictionary.MergedDictionaries>
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
             </ResourceDictionary.MergedDictionaries>
@@ -16,8 +39,8 @@
                    "Segoe UI Variable Display".
                  - Color: neutral layers only; accent reserved for the single
                    primary action per view.
-                 - Motion: state transitions 100-140ms; card entrance 200-280ms
-                   (see LearnPage.xaml.cs), all interruptible.
+                 - Motion: native page entrance; 90-160ms card/answer motion.
+                   Text is never scaled. See LearnPage.xaml.cs.
                  ============================================================ -->
 
             <!-- Cards: filled -->
@@ -26,7 +49,7 @@
                 <Setter Property="Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}"/>
                 <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}"/>
                 <Setter Property="BorderThickness" Value="1"/>
-                <Setter Property="CornerRadius" Value="10"/>
+                <Setter Property="CornerRadius" Value="12"/>
                 <Setter Property="Padding" Value="0"/>
                 <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
                 <Setter Property="VerticalContentAlignment" Value="Center"/>
@@ -43,24 +66,24 @@
                                 <VisualStateManager.VisualStateGroups>
                                     <VisualStateGroup x:Name="CommonStates">
                                         <VisualStateGroup.Transitions>
-                                            <VisualTransition GeneratedDuration="0:00:00:00.12"/>
+                                            <VisualTransition GeneratedDuration="0:0:0.12"/>
                                         </VisualStateGroup.Transitions>
                                         <VisualState x:Name="Normal"/>
                                         <VisualState x:Name="PointerOver">
                                             <VisualState.Setters>
-                                                <Setter Target="Root.Background" Value="{ThemeResource CardBackgroundFillColorSecondaryBrush}"/>
-                                                <Setter Target="Root.BorderBrush" Value="{ThemeResource ControlElevationBorderBrush}"/>
+                                                <Setter Target="Root.Background" Value="{ThemeResource ControlFillColorSecondaryBrush}"/>
+                                                <Setter Target="Root.BorderBrush" Value="{ThemeResource LexioAccentBrush}"/>
                                             </VisualState.Setters>
                                         </VisualState>
                                         <VisualState x:Name="Pressed">
                                             <VisualState.Setters>
                                                 <Setter Target="Root.Background" Value="{ThemeResource ControlFillColorTertiaryBrush}"/>
-                                                <Setter Target="Root.BorderBrush" Value="{ThemeResource ControlStrokeColorDefaultBrush}"/>
+                                                <Setter Target="Root.BorderBrush" Value="{ThemeResource LexioAccentStrokeBrush}"/>
                                             </VisualState.Setters>
                                         </VisualState>
                                         <VisualState x:Name="Disabled">
                                             <VisualState.Setters>
-                                                <Setter Target="Root.Opacity" Value="0.45"/>
+                                                <Setter Target="Root.Opacity" Value="{ThemeResource LexioDisabledOpacity}"/>
                                                 <Setter Target="Root.Background" Value="{ThemeResource ControlFillColorDisabledBrush}"/>
                                             </VisualState.Setters>
                                         </VisualState>
@@ -82,13 +105,13 @@
             <Style x:Key="GhostButtonStyle" TargetType="Button" BasedOn="{StaticResource CardButtonStyle}">
                 <Setter Property="Background" Value="Transparent"/>
                 <Setter Property="BorderBrush" Value="{ThemeResource ControlStrokeColorDefaultBrush}"/>
-                <Setter Property="CornerRadius" Value="8"/>
+                <Setter Property="CornerRadius" Value="10"/>
             </Style>
 
             <!-- Grade pills -->
             <Style x:Key="GradeButtonStyle" TargetType="Button" BasedOn="{StaticResource CardButtonStyle}">
-                <Setter Property="CornerRadius" Value="8"/>
-                <Setter Property="MinHeight" Value="48"/>
+                <Setter Property="CornerRadius" Value="10"/>
+                <Setter Property="MinHeight" Value="56"/>
                 <Setter Property="MinWidth" Value="112"/>
                 <Setter Property="Padding" Value="18,8"/>
                 <Setter Property="HorizontalContentAlignment" Value="Center"/>
@@ -114,13 +137,13 @@
                                 <VisualStateManager.VisualStateGroups>
                                     <VisualStateGroup x:Name="CommonStates">
                                         <VisualStateGroup.Transitions>
-                                            <VisualTransition GeneratedDuration="0:00:00:00.1"/>
+                                            <VisualTransition GeneratedDuration="0:0:0.1"/>
                                         </VisualStateGroup.Transitions>
                                         <VisualState x:Name="Normal"/>
                                         <VisualState x:Name="PointerOver">
                                             <VisualState.Setters>
                                                 <Setter Target="Root.Background" Value="{ThemeResource ControlFillColorSecondaryBrush}"/>
-                                                <Setter Target="Root.Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}"/>
+                                                <Setter Target="IconContent.Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}"/>
                                             </VisualState.Setters>
                                         </VisualState>
                                         <VisualState x:Name="Pressed">
@@ -130,12 +153,12 @@
                                         </VisualState>
                                         <VisualState x:Name="Disabled">
                                             <VisualState.Setters>
-                                                <Setter Target="Root.Opacity" Value="0.4"/>
+                                                <Setter Target="Root.Opacity" Value="{ThemeResource LexioDisabledOpacity}"/>
                                             </VisualState.Setters>
                                         </VisualState>
                                     </VisualStateGroup>
                                 </VisualStateManager.VisualStateGroups>
-                                <ContentPresenter
+                                <ContentPresenter x:Name="IconContent" Foreground="{TemplateBinding Foreground}"
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
                                     Content="{TemplateBinding Content}"
@@ -151,38 +174,40 @@
                 <Setter Property="Background" Value="{ThemeResource CardBackgroundFillColorDefaultBrush}"/>
                 <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}"/>
                 <Setter Property="BorderThickness" Value="1"/>
-                <Setter Property="CornerRadius" Value="10"/>
-                <Setter Property="Padding" Value="18,14"/>
+                <Setter Property="CornerRadius" Value="12"/>
+                <Setter Property="Padding" Value="24,20"/>
             </Style>
 
             <!-- Typography -->
             <Style x:Key="PageTitle" TargetType="TextBlock">
-                <Setter Property="FontSize" Value="30"/>
+                <Setter Property="FontSize" Value="32"/>
                 <Setter Property="FontWeight" Value="SemiBold"/>
-                <Setter Property="Margin" Value="0,0,0,2"/>
+                <Setter Property="Margin" Value="0,0,0,4"/>
             </Style>
             <Style x:Key="PageSubtitle" TargetType="TextBlock">
                 <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}"/>
                 <Setter Property="FontSize" Value="14"/>
+                <Setter Property="TextWrapping" Value="Wrap"/>
                 <Setter Property="Margin" Value="0,0,0,20"/>
             </Style>
             <Style x:Key="SectionHeader" TargetType="TextBlock">
-                <Setter Property="FontSize" Value="15"/>
+                <Setter Property="FontSize" Value="17"/>
                 <Setter Property="FontWeight" Value="SemiBold"/>
-                <Setter Property="Margin" Value="0,0,0,10"/>
+                <Setter Property="Margin" Value="0"/>
             </Style>
             <Style x:Key="MetricValue" TargetType="TextBlock">
-                <Setter Property="FontSize" Value="26"/>
+                <Setter Property="FontSize" Value="32"/>
                 <Setter Property="FontWeight" Value="SemiBold"/>
             </Style>
             <Style x:Key="MetricLabel" TargetType="TextBlock">
                 <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}"/>
-                <Setter Property="FontSize" Value="12"/>
-                <Setter Property="Margin" Value="0,2,0,0"/>
+                <Setter Property="FontSize" Value="14"/>
+                <Setter Property="Margin" Value="0,6,0,0"/>
             </Style>
             <Style x:Key="HintTextStyle" TargetType="TextBlock">
-                <Setter Property="Foreground" Value="{ThemeResource TextFillColorTertiaryBrush}"/>
-                <Setter Property="FontSize" Value="12"/>
+                <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}"/>
+                <Setter Property="FontSize" Value="13"/>
+                <Setter Property="TextWrapping" Value="Wrap"/>
             </Style>
         </ResourceDictionary>
     </Application.Resources>

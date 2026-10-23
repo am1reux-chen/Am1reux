@@ -1,0 +1,33 @@
+# Lexio third-party software notices
+
+The dependency inventory was checked against the `win-x64-self-contained` Release publish output, restored NuGet package metadata, and license files shipped with those packages on 2026-10-18. The vocabulary section below records data added after that publish snapshot; rebuild and review a new Release output before treating the full file as a current package inventory. Regenerate it when the dependency graph, data pack, or publish profile changes. This inventory is not legal advice.
+
+## Components distributed with the application
+
+| Component and published version | Source | License | Attribution and redistribution conditions | Use in Lexio / included material |
+|---|---|---|---|---|
+| .NET runtime `Microsoft.NETCore.App.Runtime.win-x64` 10.0.13 | [NuGet package](https://www.nuget.org/packages/Microsoft.NETCore.App.Runtime.win-x64/10.0.13), [dotnet/runtime](https://github.com/dotnet/runtime) | MIT; bundled third-party notices | Preserve the MIT copyright and permission notice; retain Microsoft's runtime third-party notices. | Self-contained .NET runtime. Texts are in `licenses/dotnet/`. |
+| CommunityToolkit.Mvvm 8.4.2 | [NuGet package](https://www.nuget.org/packages/CommunityToolkit.Mvvm/8.4.2), [CommunityToolkit/dotnet](https://github.com/CommunityToolkit/dotnet) | MIT | Preserve the copyright and permission notice from the package. | MVVM source generation and commands; package license and notices are in `licenses/communitytoolkit/`. |
+| FSRS.Core 1.0.7 | [NuGet package](https://www.nuget.org/packages/FSRS.Core/1.0.7), [project source](https://github.com/TranPhucTien/FSRS.Core) | MIT (NuGet metadata) | Preserve the 2025 Tran Phuc Tien copyright and MIT permission notice. | FSRS scheduling; text is in `licenses/MIT.txt`. |
+| Microsoft.Data.Sqlite and Microsoft.Data.Sqlite.Core 10.0.13 | [Microsoft.Data.Sqlite package](https://www.nuget.org/packages/Microsoft.Data.Sqlite/10.0.13), [EF Core source](https://github.com/dotnet/efcore) | MIT (NuGet metadata) | Preserve Microsoft's copyright and the MIT permission notice. | SQLite managed database provider; text is in `licenses/MIT.txt`. |
+| Microsoft.Extensions.DependencyInjection.Abstractions 9.0.5 | [NuGet package](https://www.nuget.org/packages/Microsoft.Extensions.DependencyInjection.Abstractions/9.0.5), [dotnet/runtime](https://github.com/dotnet/runtime) | MIT (NuGet metadata) | Preserve Microsoft's copyright, license, and package third-party notices. | Runtime abstraction assembly; texts are in `licenses/microsoft/`. |
+| Microsoft.Web.WebView2 and Core Projection 1.0.3179.45 | [NuGet package](https://www.nuget.org/packages/Microsoft.Web.WebView2/1.0.3179.45), [WebView2](https://developer.microsoft.com/microsoft-edge/webview2/) | Microsoft license terms; package license and notice | Retain the package `LICENSE.txt` and `NOTICE.txt` without alteration. | Managed SDK/projection assemblies in the published dependency graph. Lexio does not redistribute the separate Evergreen WebView2 Runtime. Texts are in `licenses/microsoft/`. |
+| Windows App SDK self-contained payload: `Microsoft.WindowsAppSDK` 1.8.250916003; `Base` 1.8.250831001; `Foundation` 1.8.250906002; `InteractiveExperiences` 1.8.250906004; `AI` 1.8.38; `ML` 1.8.2091; `Widgets` 1.8.250904007; `WinUI` 1.8.250906003; `DWrite` 1.8.25090401; `Runtime` 1.8.250916003; `Microsoft.Windows.AI.MachineLearning.Projection` 1.8.2091.16681 | [Windows App SDK source](https://github.com/microsoft/WindowsAppSDK), [main NuGet package](https://www.nuget.org/packages/Microsoft.WindowsAppSDK/1.8.250916003) | Microsoft license terms; package license and third-party notices | Retain each applicable package license, NOTICE, and third-party notice file included under `licenses/microsoft/`. | WinUI and Windows App SDK runtime dependencies for the unpackaged app. The app publishes the native payload beside the executable. |
+| SQLitePCLRaw bundle, core, provider, and `e_sqlite3` native library 2.1.13 | [NuGet package](https://www.nuget.org/packages/SQLitePCLRaw.bundle_e_sqlite3/2.1.13), [SQLitePCL.raw source](https://github.com/ericsink/SQLitePCL.raw) | Apache-2.0 for SQLitePCLRaw; SQLite core is public domain | Retain the Apache license and applicable notices. SQLite core has no license fee or attribution condition, but its public-domain status is documented here. | SQLite provider and `e_sqlite3.dll`; texts are in `licenses/Apache-2.0.txt` and `licenses/SQLite-Public-Domain.txt`. |
+
+The previously audited publish output also contains build-generated XAML/PRI resources, the app's own assemblies, and Windows SDK reference metadata. Windows SDK Build Tools and reference packs are build-time inputs and are not shipped runtime libraries. That older output predates the bundled vocabulary source change and does not represent a build containing the new word lists. Speech uses Windows APIs and installed voices, which Lexio does not redistribute.
+
+## Dictionary and media data
+
+The application source now contains the embedded offline resource `src/Lexico.Core/Dictionary/builtin-vocabulary.json`: 21,985 common English words, 753 academic words, and 3,395 IELTS preparation words. Its combined data is distributed under CC BY-SA 4.0. The resource is generated from the pinned wordfreq, FrequencyWords, NGSL 1.2, NAWL 1.2, and English Wiktionary sources; detailed authorship, license terms, hashes, and transformations are in `licenses/vocabulary/NOTICE.md` and `licenses/vocabulary/manifest.json`. The Core project embeds this data in the app; the app project copies the notice and manifest through its existing `licenses/**` publish rule.
+
+The IELTS deck is a preparation selection based on NGSL and NAWL, not an official IELTS list. BNC/COCA data is not included because the applicable license for the specific downloaded file could not be confirmed.
+
+The separate `src/Lexico.Core/Dictionary/starter-dictionary.json` still has unverified provenance. The current self-contained publish profile excludes that resource; the newly licensed vocabulary resource is embedded independently and is not excluded. No third-party pronunciation audio is bundled: speech uses installed Windows voices.
+
+## License texts
+
+- `licenses/MIT.txt` contains the MIT terms and copyright notices for MIT-declared components listed above.
+- `licenses/Apache-2.0.txt` contains the Apache License 2.0 text for SQLitePCLRaw.
+- `licenses/SQLite-Public-Domain.txt` records SQLite core's public-domain status and links to SQLite's canonical statement.
+- `licenses/dotnet/`, `licenses/communitytoolkit/`, and `licenses/microsoft/` contain package/runtime license and notice files copied from the restored packages and installed .NET runtime.

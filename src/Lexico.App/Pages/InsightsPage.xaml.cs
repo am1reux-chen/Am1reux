@@ -1,5 +1,6 @@
 using Lexio.Services;
 using Lexio.ViewModels;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 
@@ -9,10 +10,15 @@ public sealed partial class InsightsPage : Page
 {
     public InsightsViewModel Vm { get; }
 
+    public Visibility LoadErrorVisibility(string? error) =>
+        string.IsNullOrWhiteSpace(error) ? Visibility.Collapsed : Visibility.Visible;
+
     public InsightsPage()
     {
         InitializeComponent();
-        Vm = new InsightsViewModel(AppServices.Instance);
+        Vm = new InsightsViewModel(AppServices.Instance,
+            error => StartupFailureReporter.WriteTechnicalError(error, AppServices.StartupLogPath,
+                "loading Insights data failed"));
     }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)

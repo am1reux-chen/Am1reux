@@ -8,7 +8,51 @@
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls">
 
     <Grid Padding="40,32,40,28">
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="LibraryLayoutStates">
+                <VisualState x:Name="WideLibrary">
+                    <VisualState.StateTriggers><AdaptiveTrigger MinWindowWidth="1100"/></VisualState.StateTriggers>
+                </VisualState>
+                <VisualState x:Name="NarrowLibrary">
+                    <VisualState.StateTriggers><AdaptiveTrigger MinWindowWidth="0"/></VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="ResultsPane.(Grid.ColumnSpan)" Value="2"/>
+                        <Setter Target="DecksPane.(Grid.Row)" Value="1"/>
+                        <Setter Target="DecksPane.(Grid.Column)" Value="0"/>
+                        <Setter Target="DecksPane.(Grid.ColumnSpan)" Value="2"/>
+                        <Setter Target="DecksPane.MaxHeight" Value="180"/>
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+            <VisualStateGroup x:Name="LibraryHeaderLayoutStates">
+                <VisualState x:Name="WideLibraryHeader">
+                    <VisualState.StateTriggers><AdaptiveTrigger MinWindowWidth="760"/></VisualState.StateTriggers>
+                </VisualState>
+                <VisualState x:Name="CompactLibraryHeader">
+                    <VisualState.StateTriggers><AdaptiveTrigger MinWindowWidth="0"/></VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="LibraryActions.(Grid.Row)" Value="1"/>
+                        <Setter Target="LibraryActions.(Grid.Column)" Value="0"/>
+                        <Setter Target="LibraryActions.(Grid.ColumnSpan)" Value="2"/>
+                        <Setter Target="SearchRoot.(Grid.Row)" Value="2"/>
+                        <Setter Target="SearchStatus.(Grid.Row)" Value="3"/>
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+            <VisualStateGroup x:Name="LibraryHeaderActionOrientationStates">
+                <VisualState x:Name="HorizontalLibraryActions">
+                    <VisualState.StateTriggers><AdaptiveTrigger MinWindowWidth="500"/></VisualState.StateTriggers>
+                </VisualState>
+                <VisualState x:Name="VerticalLibraryActions">
+                    <VisualState.StateTriggers><AdaptiveTrigger MinWindowWidth="0"/></VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="LibraryActions.Orientation" Value="Vertical"/>
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -23,54 +67,84 @@
             <TextBlock Text="Library" Style="{StaticResource PageTitle}"/>
             <TextBlock Text="搜索词库 · 管理词书 · 导入自定义内容" Style="{StaticResource PageSubtitle}"/>
         </StackPanel>
-        <Button Grid.Row="0" Grid.Column="1" Click="OnImportClick" VerticalAlignment="Bottom"
-                Style="{StaticResource GhostButtonStyle}" Padding="14,8">
-            <StackPanel Orientation="Horizontal" Spacing="8">
-                <FontIcon Glyph="&#xE8E5;" FontSize="14"/>
-                <TextBlock Text="导入 CSV / TXT" FontSize="13"/>
-            </StackPanel>
-        </Button>
+        <StackPanel x:Name="LibraryActions" Grid.Row="0" Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Bottom">
+            <Button Click="OnCreateBackupClick" Style="{StaticResource GhostButtonStyle}" Padding="12,8">
+                <StackPanel Orientation="Horizontal" Spacing="7">
+                    <FontIcon Glyph="&#xE8F4;" FontSize="14"/>
+                    <TextBlock Text="完整备份" FontSize="13"/>
+                </StackPanel>
+            </Button>
+            <Button Click="OnRestoreBackupClick" Style="{StaticResource GhostButtonStyle}" Padding="12,8">
+                <StackPanel Orientation="Horizontal" Spacing="7">
+                    <FontIcon Glyph="&#xE777;" FontSize="14"/>
+                    <TextBlock Text="恢复备份" FontSize="13"/>
+                </StackPanel>
+            </Button>
+            <Button Click="OnImportClick" Style="{StaticResource GhostButtonStyle}" Padding="14,8"
+                    ToolTipService.ToolTip="导入 CSV/TXT、TypeWords JSON 或 TypeWords GitHub ZIP 词书">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <FontIcon Glyph="&#xE8E5;" FontSize="14"/>
+                    <TextBlock Text="导入词库" FontSize="13"/>
+                </StackPanel>
+            </Button>
+        </StackPanel>
 
         <!-- search -->
         <Grid x:Name="SearchRoot" Grid.Row="1" Grid.ColumnSpan="2" Margin="0,2,0,4">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
             <TextBox x:Name="SearchBox"
                      PlaceholderText="搜索单词，输入即出结果"
                      TextChanged="OnSearchTextChanged"
                      Height="42" FontSize="15" CornerRadius="10"
                      Padding="44,0,14,0" VerticalContentAlignment="Center"/>
             <FontIcon Glyph="&#xE721;" FontSize="15" Foreground="{ThemeResource TextFillColorTertiaryBrush}"
-                      Margin="16,0,0,0" VerticalAlignment="Center" IsHitTestVisible="False"/>
+                      Margin="16,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" IsHitTestVisible="False"/>
+            <ComboBox Grid.Row="1" ItemsSource="{x:Bind Vm.MarkFilters, Mode=OneWay}"
+                      DisplayMemberPath="Name" SelectedValuePath="Filter"
+                      SelectedValue="{x:Bind Vm.SelectedMarkFilter, Mode=TwoWay}"
+                      HorizontalAlignment="Left" MinWidth="180" Margin="0,8,0,0"
+                      AutomationProperties.Name="单词标记筛选"/>
         </Grid>
 
         <!-- status line -->
-        <Grid Grid.Row="2" Grid.ColumnSpan="2" ColumnSpacing="10" Margin="2,6,2,10">
+        <Grid x:Name="SearchStatus" Grid.Row="2" Grid.ColumnSpan="2" ColumnSpacing="10" Margin="2,6,2,10">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
-            <TextBlock Text="{x:Bind Vm.ResultCountText, Mode=OneWay}" Style="{StaticResource HintTextStyle}" VerticalAlignment="Center"/>
+            <StackPanel Spacing="2" VerticalAlignment="Center">
+                <TextBlock Text="{x:Bind Vm.ResultCountText, Mode=OneWay}" Style="{StaticResource HintTextStyle}"/>
+                <TextBlock Text="{x:Bind Vm.StatusText, Mode=OneWay}" Style="{StaticResource HintTextStyle}" TextWrapping="Wrap"/>
+            </StackPanel>
             <muxc:ProgressRing Grid.Column="1" IsActive="{x:Bind Vm.Searching, Mode=OneWay}" Width="18" Height="18"/>
         </Grid>
 
-        <Grid Grid.Row="3" Grid.ColumnSpan="2" ColumnSpacing="28">
+        <Grid x:Name="LibraryContent" Grid.Row="4" Grid.ColumnSpan="2" ColumnSpacing="24" RowSpacing="24">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="2.2*"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
             <!-- results -->
-            <Grid Grid.Column="0">
+            <Grid x:Name="ResultsPane" Grid.Column="0">
                 <!-- initial state -->
                 <StackPanel x:Name="InitialHintPanel" VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="8">
                     <FontIcon Glyph="&#xE721;" FontSize="26" Foreground="{ThemeResource TextFillColorTertiaryBrush}" HorizontalAlignment="Center"/>
-                    <TextBlock Text="输入关键词搜索词库" FontSize="14" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center"/>
+                    <TextBlock Text="输入关键词搜索词库，或选择右侧词书浏览" FontSize="14" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center"/>
                 </StackPanel>
                 <!-- no results -->
                 <StackPanel x:Name="EmptyResultsPanel" VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="8"
                             Visibility="Collapsed">
                     <FontIcon Glyph="&#xE7BA;" FontSize="26" Foreground="{ThemeResource TextFillColorTertiaryBrush}" HorizontalAlignment="Center"/>
-                    <TextBlock Text="没有找到匹配的单词" FontSize="14" HorizontalAlignment="Center"/>
-                    <TextBlock Text="换个拼写或更短的关键词试试" Style="{StaticResource HintTextStyle}" HorizontalAlignment="Center"/>
+                    <TextBlock x:Name="EmptyResultsTitle" Text="没有找到匹配的单词" FontSize="14" HorizontalAlignment="Center"/>
+                    <TextBlock x:Name="EmptyResultsHint" Text="换个拼写或更短的关键词试试" Style="{StaticResource HintTextStyle}" HorizontalAlignment="Center"/>
                 </StackPanel>
                 <ListView x:Name="ResultsList" ItemsSource="{x:Bind Vm.Results, Mode=OneWay}"
                           SelectionMode="None" IsItemClickEnabled="True" ItemClick="OnWordClick">
@@ -84,21 +158,61 @@
                     <ListView.ItemTemplate>
                         <DataTemplate x:DataType="vm:SearchResultItem">
                             <Grid Padding="8,8" ColumnSpacing="12">
+                                <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
                                 <StackPanel Spacing="2" VerticalAlignment="Center">
-                                    <StackPanel Orientation="Horizontal" Spacing="10">
-                                        <TextBlock Text="{x:Bind Word.Lemma}" FontSize="16.5" FontWeight="SemiBold"/>
-                                        <TextBlock Text="{x:Bind Word.IpaUs}" Foreground="{ThemeResource TextFillColorTertiaryBrush}"
-                                                   FontSize="12.5" VerticalAlignment="Center"/>
-                                    </StackPanel>
-                                    <TextBlock FontSize="12.5" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"
+                                    <TextBlock Text="{x:Bind Word.Lemma}" FontSize="17" FontWeight="SemiBold"
+                                               TextWrapping="Wrap" MaxLines="2" TextTrimming="CharacterEllipsis"/>
+                                    <TextBlock Text="{x:Bind PronunciationDisplay}"
+                                               Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                                               FontSize="12" TextWrapping="Wrap"/>
+                                    <TextBlock FontSize="14" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"
                                                Text="{x:Bind FirstLine}" MaxLines="2" TextTrimming="CharacterEllipsis"/>
+                                    <TextBlock Text="{x:Bind DeckName}" FontSize="11"
+                                               Foreground="{ThemeResource TextFillColorTertiaryBrush}" TextTrimming="CharacterEllipsis"/>
                                 </StackPanel>
-                                <FontIcon Grid.Column="1" Glyph="&#xE767;" FontSize="13"
-                                          Foreground="{ThemeResource TextFillColorTertiaryBrush}" VerticalAlignment="Center"/>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="3" VerticalAlignment="Center">
+                                    <ToggleButton Content="★" IsChecked="{x:Bind IsFavorite, Mode=OneWay}" Tag="Favorite"
+                                                  Click="OnMarkToggleClick" Padding="6,4" MinWidth="30"
+                                                  AutomationProperties.Name="收藏" ToolTipService.ToolTip="收藏"/>
+                                    <ToggleButton Content="!" IsChecked="{x:Bind IsWrong, Mode=OneWay}" Tag="Wrong"
+                                                  Click="OnMarkToggleClick" Padding="6,4" MinWidth="30"
+                                                  AutomationProperties.Name="错词" ToolTipService.ToolTip="错词"/>
+                                    <ToggleButton Content="✓" IsChecked="{x:Bind IsMastered, Mode=OneWay}" Tag="Mastered"
+                                                  Click="OnMarkToggleClick" Padding="6,4" MinWidth="30"
+                                                  AutomationProperties.Name="已掌握" ToolTipService.ToolTip="已掌握"/>
+                                    <FontIcon Glyph="&#xE767;" FontSize="13" Margin="4,0,0,0"
+                                              Foreground="{ThemeResource TextFillColorTertiaryBrush}" VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <muxc:Expander Grid.Row="1" Grid.ColumnSpan="2" Header="查看词条详情"
+                                               Visibility="{x:Bind Word.Details.HasContent, Mode=OneTime}"
+                                               HorizontalAlignment="Stretch" Margin="0,5,0,0">
+                                    <ItemsControl ItemsSource="{x:Bind DetailSections}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="vm:WordDetailSection">
+                                                <StackPanel Spacing="6" Margin="0,0,0,12">
+                                                    <TextBlock Text="{x:Bind Title}" FontSize="12" FontWeight="SemiBold"
+                                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                                    <ItemsControl ItemsSource="{x:Bind Lines}">
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate x:DataType="vm:WordDetailLine">
+                                                                <StackPanel Spacing="2" Margin="0,0,0,4">
+                                                                    <TextBlock Text="{x:Bind Primary}" FontSize="14" TextWrapping="Wrap"/>
+                                                                    <TextBlock Text="{x:Bind Secondary}" FontSize="12" TextWrapping="Wrap"
+                                                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                                               Visibility="{x:Bind HasSecondary, Mode=OneTime}"/>
+                                                                </StackPanel>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </muxc:Expander>
                             </Grid>
                         </DataTemplate>
                     </ListView.ItemTemplate>
@@ -106,42 +220,60 @@
             </Grid>
 
             <!-- decks -->
-            <StackPanel Grid.Column="1" Spacing="10" MinWidth="240">
+            <Grid x:Name="DecksPane" Grid.Column="1" RowSpacing="8" MinWidth="216">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
                 <TextBlock Text="词书" Style="{StaticResource SectionHeader}"/>
-                <ScrollViewer VerticalScrollBarVisibility="Auto" VerticalAlignment="Stretch">
-                    <StackPanel Spacing="8">
-                        <StackPanel x:Name="DecksEmptyHint" Spacing="6" Visibility="Collapsed">
-                            <TextBlock Text="还没有词书" FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                            <TextBlock Text="内置词库会在首次启动时就绪；也可以从右上角导入 CSV / TXT" Style="{StaticResource HintTextStyle}" TextWrapping="Wrap"/>
-                        </StackPanel>
-                        <ItemsControl ItemsSource="{x:Bind Vm.Decks, Mode=OneWay}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate x:DataType="models:DeckInfo">
-                                    <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                                            BorderThickness="1" CornerRadius="10"
-                                            Padding="14,12" Margin="0,0,0,2">
-                                        <Grid ColumnSpacing="12">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="Auto"/>
-                                            </Grid.ColumnDefinitions>
-                                            <StackPanel Spacing="2" VerticalAlignment="Center">
-                                                <TextBlock Text="{x:Bind Name}" FontSize="13.5" FontWeight="SemiBold" TextWrapping="Wrap"/>
-                                                <TextBlock Text="{x:Bind Description}" FontSize="11"
-                                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" MaxLines="2" TextTrimming="CharacterEllipsis"/>
-                                            </StackPanel>
-                                            <TextBlock Grid.Column="1" Text="{x:Bind WordCount}" FontSize="19" FontWeight="SemiBold"
-                                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
-                                        </Grid>
-                                    </Border>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
+                <StackPanel Grid.Row="1" Spacing="4">
+                    <Button Content="全部词书" Click="OnClearDeckSelectionClick" Style="{StaticResource GhostButtonStyle}"
+                            Padding="10,5" HorizontalAlignment="Left"/>
+                    <TextBlock Text="{x:Bind Vm.SearchScopeText, Mode=OneWay}" Style="{StaticResource HintTextStyle}" TextWrapping="Wrap"/>
+                </StackPanel>
+                <Grid Grid.Row="2">
+                    <StackPanel x:Name="DecksEmptyHint" Spacing="6" Visibility="Collapsed">
+                        <TextBlock Text="还没有词书" FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                        <TextBlock Text="当前没有预装词库。请导入 CSV、TXT、TypeWords JSON 或 TypeWords GitHub ZIP 词书后开始学习。" Style="{StaticResource HintTextStyle}" TextWrapping="Wrap"/>
                     </StackPanel>
-                </ScrollViewer>
-                <TextBlock Text="{x:Bind Vm.StatusText, Mode=OneWay}" Style="{StaticResource HintTextStyle}" TextWrapping="Wrap"/>
-            </StackPanel>
+                    <StackPanel x:Name="DecksLoadErrorPanel" Spacing="8" Visibility="Collapsed">
+                        <TextBlock Text="{x:Bind Vm.DecksLoadError, Mode=OneWay}" TextWrapping="Wrap"/>
+                        <Button Content="重试" Command="{x:Bind Vm.RetryDecksCommand}" HorizontalAlignment="Left"/>
+                    </StackPanel>
+                    <ListView x:Name="DecksList" ItemsSource="{x:Bind Vm.Decks, Mode=OneWay}" SelectionMode="Single"
+                              SelectionChanged="OnDeckSelectionChanged">
+                        <ListView.ItemContainerStyle>
+                            <Style TargetType="ListViewItem">
+                                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                <Setter Property="Padding" Value="0"/>
+                                <Setter Property="Margin" Value="0,0,0,4"/>
+                            </Style>
+                        </ListView.ItemContainerStyle>
+                        <ListView.ItemTemplate>
+                            <DataTemplate x:DataType="models:DeckInfo">
+                                <Border Background="Transparent"
+                                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                        BorderThickness="1" CornerRadius="10" Padding="14,12">
+                                    <Grid ColumnSpacing="12">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Spacing="2" VerticalAlignment="Center">
+                                            <TextBlock Text="{x:Bind Name}" FontSize="14" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                                            <TextBlock Text="{x:Bind Description}" FontSize="13"
+                                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" MaxLines="2" TextTrimming="CharacterEllipsis"/>
+                                        </StackPanel>
+                                        <TextBlock Grid.Column="1" Text="{x:Bind WordCount}" FontSize="19" FontWeight="SemiBold"
+                                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </Grid>
+            </Grid>
         </Grid>
     </Grid>
 </Page>
